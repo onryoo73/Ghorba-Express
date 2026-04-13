@@ -17,7 +17,7 @@ export function DashboardGuard({
   adminOnly = false
 }: DashboardGuardProps): JSX.Element {
   const router = useRouter();
-  const { isReady, isAuthenticated, role, isAdmin } = useAuthSession();
+  const { isReady, isAuthenticated, role, effectiveRole, isAdmin } = useAuthSession();
 
   useEffect(() => {
     if (!isReady) return;
@@ -29,15 +29,17 @@ export function DashboardGuard({
       router.replace("/dashboard");
       return;
     }
-    if (allowedRoles && role && !allowedRoles.includes(role) && !isAdmin) {
+    const currentRole = role === "both" ? effectiveRole : role;
+    if (allowedRoles && currentRole && !allowedRoles.includes(currentRole) && !isAdmin) {
       router.replace("/dashboard");
     }
-  }, [isReady, isAuthenticated, role, isAdmin, adminOnly, allowedRoles, router]);
+  }, [isReady, isAuthenticated, role, effectiveRole, isAdmin, adminOnly, allowedRoles, router]);
 
   if (!isReady) return <p className="text-sm text-muted">Checking session...</p>;
   if (!isAuthenticated) return <p className="text-sm text-muted">Redirecting to login...</p>;
   if (adminOnly && !isAdmin) return <p className="text-sm text-muted">Admin only.</p>;
-  if (allowedRoles && role && !allowedRoles.includes(role) && !isAdmin) {
+  const currentRole = role === "both" ? effectiveRole : role;
+  if (allowedRoles && currentRole && !allowedRoles.includes(currentRole) && !isAdmin) {
     return <p className="text-sm text-muted">Role does not match this dashboard.</p>;
   }
 

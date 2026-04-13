@@ -6,19 +6,24 @@ import type { Route } from "next";
 import { PackageCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
   isAuthenticated: boolean;
-  role: string | null;
+  role: UserRole | null;
+  effectiveRole: DashboardMode | null;
   isAdmin: boolean;
+  onModeChange: (mode: DashboardMode) => void;
   onSignOut: () => Promise<void>;
 }
 
 export function AppHeader({
   isAuthenticated,
   role,
+  effectiveRole,
   isAdmin,
+  onModeChange,
   onSignOut
 }: AppHeaderProps): JSX.Element {
   const pathname = usePathname();
@@ -73,8 +78,32 @@ export function AppHeader({
           </Badge>
           {isAuthenticated && role && (
             <Badge className="border-white/20 bg-white/10 text-foreground">
-              {isAdmin ? "admin" : role}
+              {isAdmin ? "admin" : role === "both" ? `both (${effectiveRole})` : role}
             </Badge>
+          )}
+          {isAuthenticated && role === "both" && (
+            <div className="hidden rounded-xl border border-white/15 bg-black/20 p-1 sm:flex">
+              <button
+                type="button"
+                onClick={() => onModeChange("buyer")}
+                className={cn(
+                  "rounded-lg px-2 py-1 text-xs",
+                  effectiveRole === "buyer" ? "bg-electricBlue text-white" : "text-muted"
+                )}
+              >
+                Buyer View
+              </button>
+              <button
+                type="button"
+                onClick={() => onModeChange("traveler")}
+                className={cn(
+                  "rounded-lg px-2 py-1 text-xs",
+                  effectiveRole === "traveler" ? "bg-electricBlue text-white" : "text-muted"
+                )}
+              >
+                Traveler View
+              </button>
+            </div>
           )}
           {isAuthenticated ? (
             <Button variant="secondary" onClick={() => void onSignOut()}>

@@ -17,6 +17,7 @@ Open your Supabase project SQL Editor and run:
 
 - `supabase/migrations/202604131405_init_cousinexpress.sql`
 - `supabase/migrations/202604132000_backend_ops.sql`
+- `supabase/migrations/202604132130_chat.sql`
 
 This creates:
 
@@ -29,6 +30,8 @@ This creates:
 - `disputes`
 - `notifications`
 - `audit_logs`
+- `chat_threads`
+- `chat_messages`
 
 It also creates:
 
@@ -62,6 +65,8 @@ These server routes now exist:
 - `POST /api/escrow/refund` (admin)
 - `GET|PATCH /api/admin/disputes` (admin)
 - `GET /api/admin/users` (admin)
+- `POST /api/chat/threads`
+- `GET|POST /api/chat/messages`
 
 For authenticated calls, pass the Supabase access token:
 

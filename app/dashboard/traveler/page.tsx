@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { DashboardGuard } from "@/components/guards/dashboard-guard";
 import { Button } from "@/components/ui/button";
+import { ChatPanel } from "@/components/chat-panel";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { authedJsonFetch } from "@/lib/api-client";
@@ -34,6 +35,7 @@ export default function TravelerDashboardPage(): JSX.Element {
   const [tripDate, setTripDate] = useState("");
   const [tripWeight, setTripWeight] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     try {
@@ -232,6 +234,13 @@ export default function TravelerDashboardPage(): JSX.Element {
                   <p className="text-sm">
                     {order.origin} to {order.destination} ({order.status})
                   </p>
+                  <Button
+                    variant="secondary"
+                    className="mt-2"
+                    onClick={() => setActiveChatOrderId(order.id)}
+                  >
+                    Open Chat
+                  </Button>
                   {order.status === "accepted" && (
                     <Button variant="secondary" className="mt-2" onClick={() => void markInTransit(order.id)}>
                       Mark In Transit
@@ -245,6 +254,7 @@ export default function TravelerDashboardPage(): JSX.Element {
               {assignedOrders.length === 0 && <p className="text-sm text-muted">No accepted orders yet.</p>}
             </Card>
           </div>
+          {activeChatOrderId && <ChatPanel orderId={activeChatOrderId} />}
         </section>
       </DashboardGuard>
     </AppShell>

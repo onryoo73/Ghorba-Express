@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { adminEmail, supabase } from "@/lib/supabase/client";
-import type { Profile, UserRole } from "@/lib/supabase/types";
+import type { DashboardMode, Profile, UserRole } from "@/lib/supabase/types";
 
 export function useAuthSession(): {
   isAuthenticated: boolean;
@@ -11,6 +11,9 @@ export function useAuthSession(): {
   user: User | null;
   profile: Profile | null;
   role: UserRole | null;
+  effectiveRole: DashboardMode | null;
+  activeMode: DashboardMode | null;
+  setActiveMode: (mode: DashboardMode) => void;
   isAdmin: boolean;
   signOut: () => Promise<void>;
 } {
@@ -18,6 +21,8 @@ export function useAuthSession(): {
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [activeMode, setActiveModeState] = useState<DashboardMode | null>(null);
+  const role = profile?.role ?? null;
 
   const ensureProfile = async (authUser: User) => {
     if (!supabase) return;
@@ -35,6 +40,16 @@ export function useAuthSession(): {
       .maybeSingle();
 
     if (data) {
+      if (data.role === "buyer" && fallbackRole !== "buyer") {
+        const { data: updatedData } = await supabase
+          .from("profiles")
+          .update({ role: fallbackRole })
+          .eq("id", authUser.id)
+          .select("id, full_name, phone, role")
+          .maybeSingle();
+        setProfile((updatedData as Profile | null) ?? (data as Profile));
+        return;
+      }
       setProfile(data as Profile);
       return;
     }
@@ -99,6 +114,23 @@ export function useAuthSession(): {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user || !role) return;
+    const key = `dashboard_mode_${user.id}`;
+
+    if (role === "both") {
+      const stored = localStorage.getItem(key);
+      if (stored === "buyer" || stored === "traveler") {
+        setActiveModeState(stored);
+      } else {
+        setActiveModeState("buyer");
+      }
+      return;
+    }
+
+    setActiveModeState(role === "traveler" ? "traveler" : "buyer");
+  }, [role, user]);
+
   const signOut = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -107,8 +139,25 @@ export function useAuthSession(): {
     setProfile(null);
   };
 
-  const role = profile?.role ?? null;
+  const effectiveRole: DashboardMode | null =
+    role === "both" ? activeMode ?? "buyer" : role === "traveler" ? "traveler" : role === "buyer" ? "buyer" : null;
   const isAdmin = user?.email?.toLowerCase() === adminEmail;
+  const setActiveMode = (mode: DashboardMode) => {
+    if (!user || role !== "both") return;
+    setActiveModeState(mode);
+    localStorage.setItem(`dashboard_mode_${user.id}`, mode);
+  };
 
-  return { isAuthenticated, isReady, user, profile, role, isAdmin, signOut };
+  return {
+    isAuthenticated,
+    isReady,
+    user,
+    profile,
+    role,
+    effectiveRole,
+    activeMode,
+    setActiveMode,
+    isAdmin,
+    signOut
+  };
 }

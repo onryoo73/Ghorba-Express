@@ -6,6 +6,7 @@ import { DashboardGuard } from "@/components/guards/dashboard-guard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ChatPanel } from "@/components/chat-panel";
 import { authedJsonFetch } from "@/lib/api-client";
 
 interface OrderRow {
@@ -29,6 +30,7 @@ export default function BuyerDashboardPage(): JSX.Element {
   const [itemDescription, setItemDescription] = useState("");
   const [productPriceTnd, setProductPriceTnd] = useState("");
   const [qrTokens, setQrTokens] = useState<Record<string, string>>({});
+  const [activeChatOrderId, setActiveChatOrderId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -151,6 +153,15 @@ export default function BuyerDashboardPage(): JSX.Element {
                     {order.origin} to {order.destination} ({order.status})
                   </p>
                   <p className="text-sm text-emerald">Reward: {order.reward_tnd} TND</p>
+                  {order.status === "accepted" || order.status === "in_transit" || order.status === "delivered" ? (
+                    <Button
+                      variant="secondary"
+                      className="mt-1"
+                      onClick={() => setActiveChatOrderId(order.id)}
+                    >
+                      Open Chat
+                    </Button>
+                  ) : null}
                   {order.status === "in_transit" && (
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
@@ -170,6 +181,7 @@ export default function BuyerDashboardPage(): JSX.Element {
               {orders.length === 0 && <Card>No orders yet.</Card>}
             </div>
           )}
+          {activeChatOrderId && <ChatPanel orderId={activeChatOrderId} />}
         </section>
       </DashboardGuard>
     </AppShell>

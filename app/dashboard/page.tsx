@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/lib/use-auth-session";
 
 export default function DashboardPage(): JSX.Element {
-  const { isAuthenticated, role, isAdmin, profile, user } = useAuthSession();
+  const { isAuthenticated, role, effectiveRole, isAdmin, profile, user } = useAuthSession();
 
   return (
     <AppShell>
@@ -26,25 +26,30 @@ export default function DashboardPage(): JSX.Element {
               <p className="text-xs text-muted">Debug state (for development)</p>
               <p className="text-sm">Email: {user?.email ?? "no email"}</p>
               <p className="text-sm">Role: {role ?? "not loaded"}</p>
+              <p className="text-sm">Active view: {effectiveRole ?? "none"}</p>
               <p className="text-sm">Profile: {profile ? "loaded" : "missing"}</p>
               <p className="text-sm">Admin: {isAdmin ? "yes" : "no"}</p>
             </Card>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <Card className="space-y-2">
-                <h2 className="font-medium">Buyer</h2>
-                <p className="text-sm text-muted">Orders, wallet and escrow status.</p>
-                <Link href="/dashboard/buyer">
-                  <Button className="w-full">Open Buyer Dashboard</Button>
-                </Link>
-              </Card>
-              <Card className="space-y-2">
-                <h2 className="font-medium">Traveler</h2>
-                <p className="text-sm text-muted">Trips, accepted jobs and earnings.</p>
-                <Link href="/dashboard/traveler">
-                  <Button className="w-full">Open Traveler Dashboard</Button>
-                </Link>
-              </Card>
+              {(effectiveRole === "buyer" || role === "buyer") && (
+                <Card className="space-y-2">
+                  <h2 className="font-medium">Buyer</h2>
+                  <p className="text-sm text-muted">Orders, wallet and escrow status.</p>
+                  <Link href="/dashboard/buyer">
+                    <Button className="w-full">Open Buyer Dashboard</Button>
+                  </Link>
+                </Card>
+              )}
+              {(effectiveRole === "traveler" || role === "traveler") && (
+                <Card className="space-y-2">
+                  <h2 className="font-medium">Traveler</h2>
+                  <p className="text-sm text-muted">Trips, accepted jobs and earnings.</p>
+                  <Link href="/dashboard/traveler">
+                    <Button className="w-full">Open Traveler Dashboard</Button>
+                  </Link>
+                </Card>
+              )}
               <Card className="space-y-2">
                 <h2 className="font-medium">Admin</h2>
                 <p className="text-sm text-muted">Users and dispute controls.</p>

@@ -65,18 +65,36 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
           }
         });
         if (signUpError) throw signUpError;
-        if (signUpData.user) {
-          await supabase.from("profiles").upsert({
-            id: signUpData.user.id,
-            full_name: fullName,
-            phone: phone || null,
-            role
+        if (!signUpData.session) {
+          const { error: signInAfterSignUpError } = await supabase.auth.signInWithPassword({
+            email,
+            password
           });
+          if (signInAfterSignUpError) {
+            setMessage(
+              "Account created, but email confirmation is enabled. Confirm email, then log in."
+            );
+            setMode("login");
+            return;
+          }
         }
 
-        if (!signUpData.session) {
-          await supabase.auth.signInWithPassword({ email, password });
+        const {
+          data: { user: sessionUser }
+        } = await supabase.auth.getUser();
+        const userId = sessionUser?.id ?? signUpData.user?.id;
+        if (!userId) {
+          throw new Error("Could not resolve user id after signup.");
         }
+
+        const { error: profileUpsertError } = await supabase.from("profiles").upsert({
+          id: userId,
+          full_name: fullName,
+          phone: phone || null,
+          role
+        });
+        if (profileUpsertError) throw profileUpsertError;
+
         setMessage("Account created and logged in.");
         onAuthenticated?.();
       }

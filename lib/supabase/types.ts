@@ -1,4 +1,5 @@
 export type UserRole = "buyer" | "traveler" | "both";
+export type DashboardMode = "buyer" | "traveler";
 
 export interface Profile {
   id: string;

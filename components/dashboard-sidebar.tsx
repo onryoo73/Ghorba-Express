@@ -13,7 +13,7 @@ import {
   Truck,
   User
 } from "lucide-react";
-import type { UserRole } from "@/lib/supabase/types";
+import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ interface DashboardSidebarProps {
   onToggle: () => void;
   isAuthenticated: boolean;
   role: UserRole | null;
+  effectiveRole: DashboardMode | null;
   isAdmin: boolean;
 }
 
@@ -30,6 +31,7 @@ export function DashboardSidebar({
   onToggle,
   isAuthenticated,
   role,
+  effectiveRole,
   isAdmin
 }: DashboardSidebarProps): JSX.Element {
   const pathname = usePathname();
@@ -39,10 +41,10 @@ export function DashboardSidebar({
     { href: "/dashboard", label: "Hub", icon: LayoutDashboard }
   ];
 
-  if (isAuthenticated && (role === "buyer" || role === "both")) {
+  if (isAuthenticated && (effectiveRole === "buyer" || role === "buyer")) {
     links.push({ href: "/dashboard/buyer", label: "Buyer", icon: User });
   }
-  if (isAuthenticated && (role === "traveler" || role === "both")) {
+  if (isAuthenticated && (effectiveRole === "traveler" || role === "traveler")) {
     links.push({ href: "/dashboard/traveler", label: "Traveler", icon: Truck });
   }
   if (isAuthenticated && isAdmin) {

@@ -8,7 +8,7 @@ import { useAuthSession } from "@/lib/use-auth-session";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }): JSX.Element {
-  const { isAuthenticated, role, isAdmin, signOut } = useAuthSession();
+  const { isAuthenticated, role, effectiveRole, isAdmin, setActiveMode, signOut } = useAuthSession();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -18,6 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }): JSX.Eleme
         onToggle={() => setSidebarOpen((prev) => !prev)}
         isAuthenticated={isAuthenticated}
         role={role}
+        effectiveRole={effectiveRole}
         isAdmin={isAdmin}
       />
       <div
@@ -29,7 +30,9 @@ export function AppShell({ children }: { children: React.ReactNode }): JSX.Eleme
         <AppHeader
           isAuthenticated={isAuthenticated}
           role={role}
+          effectiveRole={effectiveRole}
           isAdmin={isAdmin}
+          onModeChange={setActiveMode}
           onSignOut={signOut}
         />
         {children}
