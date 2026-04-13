@@ -10,11 +10,15 @@ import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
   isAuthenticated: boolean;
+  role: string | null;
+  isAdmin: boolean;
   onSignOut: () => Promise<void>;
 }
 
 export function AppHeader({
   isAuthenticated,
+  role,
+  isAdmin,
   onSignOut
 }: AppHeaderProps): JSX.Element {
   const pathname = usePathname();
@@ -22,7 +26,8 @@ export function AppHeader({
     { href: "/", label: "Home" },
     { href: "/trips", label: "Trips" },
     { href: "/wallet", label: "Wallet" },
-    { href: "/orders", label: "Orders" }
+    { href: "/orders", label: "Orders" },
+    { href: "/dashboard", label: "Dashboard" }
   ];
 
   return (
@@ -66,6 +71,11 @@ export function AppHeader({
           >
             {isAuthenticated ? "Authenticated" : "Guest"}
           </Badge>
+          {isAuthenticated && role && (
+            <Badge className="border-white/20 bg-white/10 text-foreground">
+              {isAdmin ? "admin" : role}
+            </Badge>
+          )}
           {isAuthenticated ? (
             <Button variant="secondary" onClick={() => void onSignOut()}>
               Log out

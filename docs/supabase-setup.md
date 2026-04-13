@@ -7,6 +7,8 @@ Ensure `.env.local` has:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_ADMIN_EMAIL=...
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 ## 2) Create tables and policies
@@ -14,6 +16,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 Open your Supabase project SQL Editor and run:
 
 - `supabase/migrations/202604131405_init_cousinexpress.sql`
+- `supabase/migrations/202604132000_backend_ops.sql`
 
 This creates:
 
@@ -23,6 +26,9 @@ This creates:
 - `payment_proofs`
 - `escrow_transactions`
 - `reviews`
+- `disputes`
+- `notifications`
+- `audit_logs`
 
 It also creates:
 
@@ -43,3 +49,22 @@ It also creates:
 - Login/sign-up credentials are stored in Supabase Auth (`auth.users`).
 - App data is stored in `public` tables above.
 - Current policies are MVP-friendly and can be tightened later for admin workflows/disputes.
+
+## 5) Backend API routes (Next.js)
+
+These server routes now exist:
+
+- `POST /api/orders`
+- `POST /api/orders/accept`
+- `POST /api/orders/mark-in-transit`
+- `POST /api/orders/confirm-delivery`
+- `POST /api/escrow/release` (admin)
+- `POST /api/escrow/refund` (admin)
+- `GET|PATCH /api/admin/disputes` (admin)
+- `GET /api/admin/users` (admin)
+
+For authenticated calls, pass the Supabase access token:
+
+```http
+Authorization: Bearer <supabase_access_token>
+```

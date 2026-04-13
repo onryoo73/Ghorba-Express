@@ -1,12 +1,13 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { LoaderCircle, Mail, LockKeyhole, UserPlus, LogIn } from "lucide-react";
+import { LoaderCircle, LogIn, Mail, Phone, UserPlus } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
+import type { UserRole } from "@/lib/supabase/types";
 
 type AuthMode = "login" | "signup";
 
@@ -19,6 +20,8 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<UserRole>("buyer");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,17 +54,31 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
         setMessage("Logged in successfully.");
         onAuthenticated?.();
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
-              full_name: fullName
+              full_name: fullName,
+              role
             }
           }
         });
         if (signUpError) throw signUpError;
-        setMessage("Account created. Check your email for verification.");
+        if (signUpData.user) {
+          await supabase.from("profiles").upsert({
+            id: signUpData.user.id,
+            full_name: fullName,
+            phone: phone || null,
+            role
+          });
+        }
+
+        if (!signUpData.session) {
+          await supabase.auth.signInWithPassword({ email, password });
+        }
+        setMessage("Account created and logged in.");
+        onAuthenticated?.();
       }
     } catch (authError) {
       const safeMessage =
@@ -93,16 +110,39 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
 
       <form onSubmit={(event) => void handleSubmit(event)} className="space-y-3">
         {mode === "signup" && (
-          <div className="relative">
-            <UserPlus className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" />
-            <Input
-              className="pl-10"
-              placeholder="Full name"
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              required
-            />
-          </div>
+          <>
+            <div className="relative">
+              <UserPlus className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" />
+              <Input
+                className="pl-10"
+                placeholder="Full name"
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+                required
+              />
+            </div>
+            <div className="relative">
+              <Phone className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" />
+              <Input
+                className="pl-10"
+                placeholder="Phone number (optional)"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+              />
+            </div>
+            <label className="block">
+              <p className="mb-1 text-xs text-muted">Role for testing</p>
+              <select
+                value={role}
+                onChange={(event) => setRole(event.target.value as UserRole)}
+                className="h-11 w-full rounded-2xl border border-white/15 bg-white/5 px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electricBlue"
+              >
+                <option value="buyer">Buyer</option>
+                <option value="traveler">Traveler</option>
+                <option value="both">Buyer + Traveler</option>
+              </select>
+            </label>
+          </>
         )}
 
         <div className="relative">
@@ -117,18 +157,14 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
           />
         </div>
 
-        <div className="relative">
-          <LockKeyhole className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" />
-          <Input
-            className="pl-10"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
+        <Input
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+          minLength={6}
+        />
 
         {error && <p className="text-sm text-red-300">{error}</p>}
         {message && <p className="text-sm text-emerald">{message}</p>}
