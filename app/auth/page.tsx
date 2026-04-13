@@ -12,7 +12,7 @@ export default function AuthPage(): JSX.Element {
       <section className="mx-auto max-w-xl">
         <h1 className="mb-2 text-2xl font-semibold">Welcome back</h1>
         <p className="mb-4 text-sm text-muted">
-          Use your verified phone number and OTP to securely access buyer, traveler, or admin tools.
+          Sign in to manage your shipments, wallet, and real-time delivery updates.
         </p>
         <AuthCard onAuthenticated={() => router.push("/")} />
       </section>
