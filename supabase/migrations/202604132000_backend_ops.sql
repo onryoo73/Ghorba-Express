@@ -1,7 +1,18 @@
 -- Backend operational tables and policies
 
-create type public.dispute_status as enum ('open', 'investigating', 'resolved', 'rejected');
-create type public.notification_channel as enum ('in_app', 'email', 'sms');
+do $$
+begin
+  create type public.dispute_status as enum ('open', 'investigating', 'resolved', 'rejected');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  create type public.notification_channel as enum ('in_app', 'email', 'sms');
+exception
+  when duplicate_object then null;
+end $$;
 
 create table if not exists public.disputes (
   id uuid primary key default gen_random_uuid(),
@@ -49,14 +60,17 @@ alter table public.disputes enable row level security;
 alter table public.notifications enable row level security;
 alter table public.audit_logs enable row level security;
 
+drop policy if exists "users can insert own profile" on public.profiles;
 create policy "users can insert own profile"
 on public.profiles for insert
 with check (auth.uid() = id);
 
+drop policy if exists "users can read own notifications" on public.notifications;
 create policy "users can read own notifications"
 on public.notifications for select
 using (auth.uid() = user_id);
 
+drop policy if exists "order participants read disputes" on public.disputes;
 create policy "order participants read disputes"
 on public.disputes for select
 using (
@@ -67,6 +81,7 @@ using (
   )
 );
 
+drop policy if exists "order participants create disputes" on public.disputes;
 create policy "order participants create disputes"
 on public.disputes for insert
 with check (

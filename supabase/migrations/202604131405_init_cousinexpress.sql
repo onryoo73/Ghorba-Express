@@ -3,10 +3,33 @@
 
 create extension if not exists "pgcrypto";
 
-create type public.user_role as enum ('buyer', 'traveler', 'both');
-create type public.order_type as enum ('buy_and_bring', 'pickup_and_bring');
-create type public.order_status as enum ('open', 'accepted', 'in_transit', 'delivered', 'completed', 'cancelled', 'disputed');
-create type public.escrow_status as enum ('deposited', 'funds_locked', 'in_transit', 'delivered', 'released', 'refunded');
+do $$
+begin
+  create type public.user_role as enum ('buyer', 'traveler', 'both');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  create type public.order_type as enum ('buy_and_bring', 'pickup_and_bring');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  create type public.order_status as enum ('open', 'accepted', 'in_transit', 'delivered', 'completed', 'cancelled', 'disputed');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  create type public.escrow_status as enum ('deposited', 'funds_locked', 'in_transit', 'delivered', 'released', 'refunded');
+exception
+  when duplicate_object then null;
+end $$;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -157,48 +180,58 @@ alter table public.escrow_transactions enable row level security;
 alter table public.reviews enable row level security;
 
 -- Profiles
+drop policy if exists "profiles are publicly readable" on public.profiles;
 create policy "profiles are publicly readable"
 on public.profiles for select
 using (true);
 
+drop policy if exists "users can update their profile" on public.profiles;
 create policy "users can update their profile"
 on public.profiles for update
 using (auth.uid() = id)
 with check (auth.uid() = id);
 
 -- Trips
+drop policy if exists "trips are publicly readable" on public.trips;
 create policy "trips are publicly readable"
 on public.trips for select
 using (true);
 
+drop policy if exists "travelers can create own trips" on public.trips;
 create policy "travelers can create own trips"
 on public.trips for insert
 with check (auth.uid() = traveler_id);
 
+drop policy if exists "travelers can update own trips" on public.trips;
 create policy "travelers can update own trips"
 on public.trips for update
 using (auth.uid() = traveler_id)
 with check (auth.uid() = traveler_id);
 
+drop policy if exists "travelers can delete own trips" on public.trips;
 create policy "travelers can delete own trips"
 on public.trips for delete
 using (auth.uid() = traveler_id);
 
 -- Orders
+drop policy if exists "buyer and traveler can read order" on public.orders;
 create policy "buyer and traveler can read order"
 on public.orders for select
 using (auth.uid() = buyer_id or auth.uid() = traveler_id);
 
+drop policy if exists "buyers can create orders" on public.orders;
 create policy "buyers can create orders"
 on public.orders for insert
 with check (auth.uid() = buyer_id);
 
+drop policy if exists "buyer or traveler can update order" on public.orders;
 create policy "buyer or traveler can update order"
 on public.orders for update
 using (auth.uid() = buyer_id or auth.uid() = traveler_id)
 with check (auth.uid() = buyer_id or auth.uid() = traveler_id);
 
 -- Payment proofs
+drop policy if exists "buyer and traveler can read proofs" on public.payment_proofs;
 create policy "buyer and traveler can read proofs"
 on public.payment_proofs for select
 using (
@@ -209,6 +242,7 @@ using (
   )
 );
 
+drop policy if exists "buyer can create proof for own orders" on public.payment_proofs;
 create policy "buyer can create proof for own orders"
 on public.payment_proofs for insert
 with check (
@@ -220,6 +254,7 @@ with check (
 );
 
 -- Escrow
+drop policy if exists "buyer and traveler can read escrow" on public.escrow_transactions;
 create policy "buyer and traveler can read escrow"
 on public.escrow_transactions for select
 using (
@@ -227,6 +262,7 @@ using (
   or auth.uid() = payee_id
 );
 
+drop policy if exists "buyer can create escrow for own order" on public.escrow_transactions;
 create policy "buyer can create escrow for own order"
 on public.escrow_transactions for insert
 with check (
@@ -237,16 +273,19 @@ with check (
   )
 );
 
+drop policy if exists "participants can update escrow" on public.escrow_transactions;
 create policy "participants can update escrow"
 on public.escrow_transactions for update
 using (auth.uid() = payer_id or auth.uid() = payee_id)
 with check (auth.uid() = payer_id or auth.uid() = payee_id);
 
 -- Reviews
+drop policy if exists "reviews are publicly readable" on public.reviews;
 create policy "reviews are publicly readable"
 on public.reviews for select
 using (true);
 
+drop policy if exists "order participants can create reviews" on public.reviews;
 create policy "order participants can create reviews"
 on public.reviews for insert
 with check (
