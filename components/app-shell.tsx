@@ -5,13 +5,19 @@ import { MobileNav } from "@/components/mobile-nav";
 import { useAuthSession } from "@/lib/use-auth-session";
 
 export function AppShell({ children }: { children: React.ReactNode }): JSX.Element {
-  const { isAuthenticated, signOut } = useAuthSession();
+  const { isAuthenticated, role, isAdmin, phoneVerified, signOut } = useAuthSession();
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-md px-4 pb-28 pt-6 sm:max-w-2xl lg:max-w-5xl lg:px-8 lg:pb-10">
-      <AppHeader isAuthenticated={isAuthenticated} onSignOut={signOut} />
+      <AppHeader
+        isAuthenticated={isAuthenticated}
+        role={role}
+        isAdmin={isAdmin}
+        phoneVerified={phoneVerified}
+        onSignOut={signOut}
+      />
       {children}
-      <MobileNav />
+      <MobileNav isAuthenticated={isAuthenticated} role={role} isAdmin={isAdmin} />
     </main>
   );
 }

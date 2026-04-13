@@ -6,24 +6,42 @@ import type { Route } from "next";
 import { PackageCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { UserRole } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
   isAuthenticated: boolean;
+  role: UserRole | null;
+  isAdmin: boolean;
+  phoneVerified: boolean;
   onSignOut: () => Promise<void>;
 }
 
 export function AppHeader({
   isAuthenticated,
+  role,
+  isAdmin,
+  phoneVerified,
   onSignOut
 }: AppHeaderProps): JSX.Element {
   const pathname = usePathname();
-  const links: { href: Route; label: string }[] = [
+  const publicLinks: { href: Route; label: string }[] = [
     { href: "/", label: "Home" },
     { href: "/trips", label: "Trips" },
     { href: "/wallet", label: "Wallet" },
     { href: "/orders", label: "Orders" }
   ];
+  const privateLinks: { href: Route; label: string }[] = [];
+  if (isAuthenticated) {
+    privateLinks.push({ href: "/buyer/orders", label: "Buyer" });
+    if (role === "traveler" || role === "both") {
+      privateLinks.push({ href: "/traveler/trips", label: "Traveler" });
+    }
+    if (isAdmin) {
+      privateLinks.push({ href: "/admin/users", label: "Admin" });
+    }
+  }
+  const links = [...publicLinks, ...privateLinks];
 
   return (
     <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-white/15 bg-[#0f1726]/80 px-4 py-3 shadow-glow backdrop-blur-xl">
@@ -57,15 +75,14 @@ export function AppHeader({
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <Badge
-            className={
-              isAuthenticated
-                ? "border-emerald/40 bg-emerald/20 text-emerald"
-                : "border-white/20 bg-white/10 text-muted"
-            }
-          >
+          <Badge className={isAuthenticated ? "border-emerald/40 bg-emerald/20 text-emerald" : "border-white/20 bg-white/10 text-muted"}>
             {isAuthenticated ? "Authenticated" : "Guest"}
           </Badge>
+          {isAuthenticated && (
+            <Badge className={phoneVerified ? "border-emerald/40 bg-emerald/20 text-emerald" : "border-amber-400/40 bg-amber-400/20 text-amber-200"}>
+              {phoneVerified ? "Phone verified" : "Phone not verified"}
+            </Badge>
+          )}
           {isAuthenticated ? (
             <Button variant="secondary" onClick={() => void onSignOut()}>
               Log out
