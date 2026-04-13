@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Star } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 const travelers = [
   { name: "Sami B.", origin: "Paris", destination: "Tunis", date: "26 Apr 2026", kg: 7, rating: 4.9 },
@@ -18,6 +20,11 @@ export default function TripsPage(): JSX.Element {
       <section>
         <h1 className="text-2xl font-semibold">Available Travelers</h1>
         <p className="mt-1 text-sm text-muted">Browse upcoming routes and reserved carrying capacity.</p>
+        <Card className="mt-4 grid gap-2 sm:grid-cols-3">
+          <Input placeholder="From" />
+          <Input placeholder="To" />
+          <Button>Filter trips</Button>
+        </Card>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {travelers.map((traveler, index) => (
             <motion.div

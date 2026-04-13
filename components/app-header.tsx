@@ -26,7 +26,7 @@ export function AppHeader({
   ];
 
   return (
-    <header className="mb-6 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 shadow-glow backdrop-blur-xl">
+    <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-white/15 bg-[#0f1726]/80 px-4 py-3 shadow-glow backdrop-blur-xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electricBlue/20">
@@ -38,7 +38,7 @@ export function AppHeader({
           </div>
         </div>
 
-        <nav className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/20 p-1">
+        <nav className="hidden items-center gap-1 rounded-xl border border-white/10 bg-black/20 p-1 lg:flex">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
@@ -56,7 +56,7 @@ export function AppHeader({
           })}
         </nav>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="ml-auto flex items-center gap-2">
           <Badge
             className={
               isAuthenticated

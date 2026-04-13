@@ -19,4 +19,10 @@ body {
     #0b1019;
   color: #e5eeff;
   font-family: "Inter", system-ui, sans-serif;
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(43, 127, 255, 0.45);
+  color: #f5f9ff;
 }
