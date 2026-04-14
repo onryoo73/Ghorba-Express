@@ -23,6 +23,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { usePostLike, usePostBookmark, usePostComments } from "@/lib/hooks/use-posts";
 import { useAuthSession } from "@/lib/use-auth-session";
+import { OfferModal } from "@/components/offer-modal";
 import type { Post } from "@/lib/supabase/database.types";
 
 interface FeedPostProps {
@@ -55,6 +56,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
 
   const isRequest = post.type === "request";
   
@@ -237,7 +239,11 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
 
         {/* Quick Action Button */}
         <div className="px-4 pb-4">
-          <Button className="w-full" variant={isRequest ? "primary" : "secondary"}>
+          <Button 
+            className="w-full" 
+            variant={isRequest ? "primary" : "secondary"}
+            onClick={() => setShowOfferModal(true)}
+          >
             {isRequest ? (
               <><Send className="h-4 w-4 mr-2" /> Make Offer</>
             ) : (
@@ -245,6 +251,16 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
             )}
           </Button>
         </div>
+
+        {/* Offer Modal */}
+        <OfferModal
+          post={post}
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          onSuccess={() => {
+            // Could refresh or show toast
+          }}
+        />
 
         {/* Comments Section */}
         {showComments && (

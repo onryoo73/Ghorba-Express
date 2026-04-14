@@ -95,6 +95,16 @@ export default function Page(): JSX.Element {
             </div>
           )}
           
+          {!loading && !error && posts.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                <Package className="h-8 w-8 text-muted" />
+              </div>
+              <p className="text-muted">No posts yet</p>
+              <p className="text-sm text-muted mt-1">Be the first to post a request or trip!</p>
+            </div>
+          )}
+          
           <div className="space-y-4">
             {posts.map((post) => (
               <FeedPost key={post.id} post={post} />
