@@ -59,6 +59,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
   const [showOfferModal, setShowOfferModal] = useState(false);
 
   const isRequest = post.type === "request";
+  const isOwnPost = post.author_id === userId;
   
   const author = post.author as { full_name: string; rating: number; verified: boolean } | undefined;
   const authorName = author?.full_name || "Unknown";
@@ -239,17 +240,34 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
 
         {/* Quick Action Button */}
         <div className="px-4 pb-4">
-          <Button 
-            className="w-full" 
-            variant={isRequest ? "primary" : "secondary"}
-            onClick={() => setShowOfferModal(true)}
-          >
-            {isRequest ? (
-              <><Send className="h-4 w-4 mr-2" /> Make Offer</>
-            ) : (
-              <><ShoppingBag className="h-4 w-4 mr-2" /> Request Delivery</>
-            )}
-          </Button>
+          {isOwnPost ? (
+            // Own post - show disabled button
+            <Button 
+              className="w-full opacity-50 cursor-not-allowed" 
+              variant="secondary"
+              disabled
+              title="This is your post"
+            >
+              {isRequest ? (
+                <><Package className="h-4 w-4 mr-2" /> Your Request</>
+              ) : (
+                <><Plane className="h-4 w-4 mr-2" /> Your Trip</>
+              )}
+            </Button>
+          ) : (
+            // Other's post - allow offer
+            <Button 
+              className="w-full" 
+              variant={isRequest ? "primary" : "secondary"}
+              onClick={() => setShowOfferModal(true)}
+            >
+              {isRequest ? (
+                <><Send className="h-4 w-4 mr-2" /> Make Offer</>
+              ) : (
+                <><ShoppingBag className="h-4 w-4 mr-2" /> Request Delivery</>
+              )}
+            </Button>
+          )}
         </div>
 
         {/* Offer Modal */}

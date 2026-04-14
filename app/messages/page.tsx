@@ -16,7 +16,8 @@ import {
   DollarSign,
   CreditCard,
   QrCode,
-  Scan
+  Scan,
+  XCircle
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
@@ -42,9 +43,10 @@ interface ChatThread {
   unread_count?: number;
   // Payment fields
   payment_intent_id?: string;
-  payment_status?: "pending" | "authorized" | "captured" | "failed" | "refunded";
+  payment_status?: "awaiting_acceptance" | "pending" | "authorized" | "captured" | "failed" | "refunded";
   amount_tnd?: number;
   delivery_status?: "pending" | "in_transit" | "delivered" | "confirmed";
+  offer_status?: "pending" | "accepted" | "declined" | "cancelled";
 }
 
 interface ChatMessage {
@@ -99,7 +101,8 @@ export default function MessagesPage(): JSX.Element {
           payment_intent_id: t.offer?.payment_intent_id,
           payment_status: t.offer?.payment_status,
           amount_tnd: t.offer?.amount_tnd,
-          delivery_status: t.delivery_status
+          delivery_status: t.delivery_status,
+          offer_status: t.offer?.status
         }));
         setThreads(formatted);
       }
@@ -334,78 +337,216 @@ export default function MessagesPage(): JSX.Element {
 
                   {/* Payment & Delivery Actions */}
                   <div className="px-4 py-3 bg-white/5 border-y border-white/10">
-                    {selectedThread.payment_status === "pending" && selectedThread.buyer_id === user?.id && (
-                      // Buyer needs to pay
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-4 w-4 text-amber" />
-                          <span className="text-sm text-amber">Payment required to proceed</span>
-                        </div>
-                        <button
-                          onClick={() => setShowPaymentModal(true)}
-                          className="flex items-center gap-2 px-4 py-2 bg-electricBlue rounded-lg text-sm font-medium hover:bg-electricBlue/80 transition-colors"
-                        >
-                          <CreditCard className="h-4 w-4" />
-                          Pay {selectedThread.amount_tnd || 0} TND
-                        </button>
-                      </div>
+                    {/* STEP 1: Offer Pending - Traveler needs to accept/reject */}
+                    {(selectedThread.offer_status === "pending" || selectedThread.payment_status === "awaiting_acceptance") && (
+                      <>
+                        {selectedThread.traveler_id === user?.id ? (
+                          // Traveler sees Accept/Decline buttons
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-amber" />
+                              <span className="text-sm text-amber">New offer received - {selectedThread.amount_tnd?.toFixed(2)} TND</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={async () => {
+                                  if (supabase && selectedThread.offer_id) {
+                                    await supabase
+                                      .from("post_offers")
+                                      .update({ 
+                                        status: "accepted",
+                                        payment_status: "pending" // Now buyer can pay
+                                      })
+                                      .eq("id", selectedThread.offer_id);
+                                    
+                                    // Notify buyer
+                                    await supabase.from("notifications").insert({
+                                      recipient_id: selectedThread.buyer_id,
+                                      sender_id: user.id,
+                                      type: "offer",
+                                      title: "Offer accepted!",
+                                      message: "Your offer was accepted. Click here to complete payment."
+                                    });
+                                    
+                                    // Update local state
+                                    setThreads(prev => prev.map(t => 
+                                      t.id === selectedThread.id 
+                                        ? { ...t, offer_status: "accepted", payment_status: "pending" }
+                                        : t
+                                    ));
+                                    setSelectedThread(prev => prev ? {
+                                      ...prev, 
+                                      offer_status: "accepted",
+                                      payment_status: "pending"
+                                    } : null);
+                                  }
+                                }}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                                Accept Offer
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (supabase && selectedThread.offer_id) {
+                                    await supabase
+                                      .from("post_offers")
+                                      .update({ status: "declined" })
+                                      .eq("id", selectedThread.offer_id);
+                                    
+                                    // Notify buyer
+                                    await supabase.from("notifications").insert({
+                                      recipient_id: selectedThread.buyer_id,
+                                      sender_id: user.id,
+                                      type: "offer",
+                                      title: "Offer declined",
+                                      message: "Your offer was declined. You can make a new offer."
+                                    });
+                                    
+                                    setThreads(prev => prev.map(t => 
+                                      t.id === selectedThread.id 
+                                        ? { ...t, offer_status: "declined" }
+                                        : t
+                                    ));
+                                    setSelectedThread(prev => prev ? {
+                                      ...prev, 
+                                      offer_status: "declined"
+                                    } : null);
+                                  }
+                                }}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-rose-400/20 text-rose-300 rounded-lg text-sm font-medium hover:bg-rose-400/30 transition-colors"
+                              >
+                                <XCircle className="h-4 w-4" />
+                                Decline
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          // Buyer waiting for traveler to accept
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-amber" />
+                            <span className="text-sm text-amber">Waiting for traveler to accept your offer...</span>
+                          </div>
+                        )}
+                      </>
                     )}
                     
-                    {selectedThread.payment_status === "pending" && selectedThread.traveler_id === user?.id && (
-                      // Traveler waiting for payment
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-amber" />
-                        <span className="text-sm text-amber">Waiting for buyer to complete payment...</span>
-                      </div>
+                    {/* STEP 2: Offer Accepted - Buyer needs to pay */}
+                    {selectedThread.offer_status === "accepted" && selectedThread.payment_status === "pending" && (
+                      <>
+                        {selectedThread.buyer_id === user?.id ? (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="h-4 w-4 text-emerald" />
+                              <span className="text-sm text-emerald">Offer accepted! Complete payment to proceed</span>
+                            </div>
+                            <button
+                              onClick={() => setShowPaymentModal(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-electricBlue rounded-lg text-sm font-medium hover:bg-electricBlue/80 transition-colors"
+                            >
+                              <CreditCard className="h-4 w-4" />
+                              Pay {selectedThread.amount_tnd?.toFixed(2)} TND
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-amber" />
+                            <span className="text-sm text-amber">Waiting for buyer to complete payment...</span>
+                          </div>
+                        )}
+                      </>
                     )}
                     
+                    {/* STEP 3: Payment Authorized - Delivery & Confirmation */}
                     {selectedThread.payment_status === "authorized" && (
-                      // Payment secured - show delivery options
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <ShieldCheck className="h-4 w-4 text-emerald" />
                           <span className="text-sm text-emerald">
                             {selectedThread.delivery_status === "confirmed" 
                               ? "Delivery confirmed & paid" 
-                              : "Payment secured in escrow"}
+                              : "Payment secured in escrow - waiting for delivery"}
                           </span>
                         </div>
-                        {selectedThread.delivery_status !== "confirmed" && (
-                          <>
-                            {selectedThread.buyer_id === user?.id ? (
-                              // Buyer shows QR for delivery
-                              <button
-                                onClick={() => {
-                                  setDeliveryMode("generate");
-                                  setShowDeliveryModal(true);
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
-                              >
-                                <QrCode className="h-4 w-4" />
-                                Confirm Receipt
-                              </button>
-                            ) : (
-                              // Traveler scans QR to complete
-                              <button
-                                onClick={() => {
-                                  setDeliveryMode("scan");
-                                  setShowDeliveryModal(true);
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
-                              >
-                                <Scan className="h-4 w-4" />
-                                Complete Delivery
-                              </button>
-                            )}
-                          </>
+                        {selectedThread.delivery_status !== "confirmed" && selectedThread.buyer_id === user?.id && (
+                          <button
+                            onClick={async () => {
+                              if (!supabase || !selectedThread.offer_id || !user?.id) {
+                                console.error("Missing required data", { 
+                                  supabase: !!supabase, 
+                                  offerId: selectedThread.offer_id, 
+                                  userId: user?.id 
+                                });
+                                return;
+                              }
+                              
+                              try {
+                                const { error: updateError } = await supabase
+                                  .from("post_offers")
+                                  .update({ 
+                                    payment_status: "captured",
+                                    delivery_status: "confirmed",
+                                    completed_at: new Date().toISOString()
+                                  })
+                                  .eq("id", selectedThread.offer_id);
+                                
+                                if (updateError) {
+                                  console.error("Failed to update offer:", updateError);
+                                  alert("Failed to confirm: " + updateError.message);
+                                  return;
+                                }
+                                
+                                await supabase.from("notifications").insert({
+                                  recipient_id: selectedThread.traveler_id,
+                                  sender_id: user.id,
+                                  type: "escrow_update",
+                                  title: "Payment released!",
+                                  message: "Buyer confirmed receipt. Funds released to you."
+                                });
+                                
+                                setThreads(prev => prev.map(t => 
+                                  t.id === selectedThread.id 
+                                    ? { ...t, payment_status: "captured", delivery_status: "confirmed" }
+                                    : t
+                                ));
+                                setSelectedThread(prev => prev ? {
+                                  ...prev, 
+                                  payment_status: "captured", 
+                                  delivery_status: "confirmed" 
+                                } : null);
+                              } catch (err) {
+                                console.error("Error confirming receipt:", err);
+                                alert("Error confirming receipt. Check console.");
+                              }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            Mark as Received
+                          </button>
+                        )}
+                        {selectedThread.delivery_status !== "confirmed" && selectedThread.traveler_id === user?.id && (
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-amber" />
+                            <span className="text-sm text-amber">Deliver item and wait for confirmation</span>
+                          </div>
                         )}
                       </div>
                     )}
                     
+                    {/* STEP 4: Complete */}
                     {selectedThread.payment_status === "captured" && (
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-emerald" />
-                        <span className="text-sm text-emerald">Transaction complete - payment released</span>
+                        <span className="text-sm text-emerald">Transaction complete - payment released to traveler</span>
+                      </div>
+                    )}
+                    
+                    {/* Offer Declined */}
+                    {selectedThread.offer_status === "declined" && (
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-rose-400" />
+                        <span className="text-sm text-rose-300">Offer was declined</span>
                       </div>
                     )}
                   </div>
@@ -456,22 +597,30 @@ export default function MessagesPage(): JSX.Element {
           buyerId={selectedThread.buyer_id}
           travelerId={selectedThread.traveler_id}
           itemDescription={selectedThread.post?.content?.slice(0, 50) || "Delivery service"}
-          onPaymentSuccess={async (paymentIntentId) => {
-            // Update database with payment
+          onPaymentSuccess={async (paymentRef) => {
+            // Update database with payment - now authorized (held in escrow)
             if (supabase && selectedThread.offer_id) {
               await supabase
                 .from("post_offers")
                 .update({ 
-                  payment_intent_id: paymentIntentId,
-                  payment_status: "authorized",
-                  status: "accepted"
+                  payment_intent_id: paymentRef,
+                  payment_status: "authorized"
                 })
                 .eq("id", selectedThread.offer_id);
+              
+              // Notify traveler
+              await supabase.from("notifications").insert({
+                recipient_id: selectedThread.traveler_id,
+                sender_id: user?.id,
+                type: "escrow_update",
+                title: "Payment received!",
+                message: "Buyer has paid. Deliver the item to receive funds."
+              });
               
               // Refresh threads
               setThreads(prev => prev.map(t => 
                 t.id === selectedThread.id 
-                  ? { ...t, payment_status: "authorized", payment_intent_id: paymentIntentId }
+                  ? { ...t, payment_status: "authorized", payment_intent_id: paymentRef }
                   : t
               ));
             }

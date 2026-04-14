@@ -6,7 +6,7 @@ alter table public.post_offers
   add column if not exists buyer_id uuid references public.profiles(id),
   add column if not exists traveler_id uuid references public.profiles(id),
   add column if not exists payment_intent_id text,
-  add column if not exists payment_status text default 'pending' check (payment_status in ('pending', 'authorized', 'captured', 'failed', 'refunded')),
+  add column if not exists payment_status text default 'awaiting_acceptance' check (payment_status in ('awaiting_acceptance', 'pending', 'authorized', 'captured', 'failed', 'refunded')),
   add column if not exists amount_tnd numeric(10,2),
   add column if not exists platform_fee_tnd numeric(10,2),
   add column if not exists total_paid_tnd numeric(10,2),

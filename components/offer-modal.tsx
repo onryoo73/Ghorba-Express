@@ -62,8 +62,8 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
           amount_tnd: totalAmount,
           platform_fee_tnd: platformFee,
           total_paid_tnd: totalAmount,
-          status: "pending",
-          payment_status: "pending"
+          status: "pending", // Awaiting traveler acceptance
+          payment_status: "awaiting_acceptance" // Can't pay until traveler accepts
         })
         .select()
         .single();
