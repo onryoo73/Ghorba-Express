@@ -15,61 +15,76 @@ import {
   MoreHorizontal,
   Send,
   Star,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { usePostLike, usePostBookmark, usePostComments } from "@/lib/hooks/use-posts";
+import { useAuthSession } from "@/lib/use-auth-session";
+import type { Post } from "@/lib/supabase/database.types";
 
 interface FeedPostProps {
-  id: string;
-  type: "request" | "trip";
-  author: {
-    name: string;
-    avatar?: string;
-    rating: number;
-    verified?: boolean;
-  };
-  content: string;
-  from?: string;
-  to?: string;
-  date?: string;
-  reward?: string;
-  kg?: number;
-  price?: string;
-  image?: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
+  post: Post;
 }
 
-export function FeedPost({
-  type,
-  author,
-  content,
-  from,
-  to,
-  date,
-  reward,
-  kg,
-  price,
-  image,
-  likes: initialLikes,
-  comments: initialComments,
-  timestamp
-}: FeedPostProps): JSX.Element {
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-  const [likes, setLikes] = useState(initialLikes);
+function formatTimeAgo(date: string): string {
+  const now = new Date();
+  const postDate = new Date(date);
+  const diffMs = now.getTime() - postDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return postDate.toLocaleDateString();
+}
+
+export function FeedPost({ post }: FeedPostProps): JSX.Element {
+  const { user } = useAuthSession();
+  const userId = user?.id;
+  
+  const { liked, toggleLike, loading: likeLoading } = usePostLike(post.id, userId);
+  const { bookmarked, toggleBookmark, loading: bookmarkLoading } = usePostBookmark(post.id, userId);
+  const { comments, addComment } = usePostComments(post.id);
+  
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikes(liked ? likes - 1 : likes + 1);
+  const isRequest = post.type === "request";
+  
+  const author = post.author as { full_name: string; rating: number; verified: boolean } | undefined;
+  const authorName = author?.full_name || "Unknown";
+  const authorRating = author?.rating || 5;
+  const authorVerified = author?.verified || false;
+  
+  const timestamp = formatTimeAgo(post.created_at);
+
+  const handleAddComment = async () => {
+    if (!userId || !commentText.trim()) return;
+    
+    setSubmitting(true);
+    try {
+      await addComment(commentText.trim(), userId);
+      setCommentText("");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const isRequest = type === "request";
+  // Format values for display
+  const from = post.origin;
+  const to = post.destination;
+  const date = post.departure_date ? new Date(post.departure_date).toLocaleDateString() : null;
+  const reward = post.reward_tnd?.toString();
+  const price = post.product_price_tnd?.toString();
+  const kg = post.weight_available_kg;
+  const images = post.images || [];
 
   return (
     <motion.div
@@ -82,12 +97,12 @@ export function FeedPost({
         <div className="p-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-lg font-semibold border border-white/10">
-              {author.name.charAt(0)}
+              {authorName.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold">{author.name}</span>
-                {author.verified && (
+                <span className="font-semibold">{authorName}</span>
+                {authorVerified && (
                   <ShieldCheck className="h-4 w-4 text-emerald" />
                 )}
               </div>
@@ -117,7 +132,7 @@ export function FeedPost({
 
         {/* Content */}
         <div className="px-4 pb-3">
-          <p className="text-sm leading-relaxed">{content}</p>
+          <p className="text-sm leading-relaxed">{post.content}</p>
         </div>
 
         {/* Route & Details Card */}
@@ -154,7 +169,7 @@ export function FeedPost({
                   Item: {price} TND
                 </Badge>
               )}
-              {kg !== undefined && (
+              {kg !== undefined && kg !== null && (
                 <Badge
                   className="text-xs bg-electricBlue/20 text-electricBlue border-electricBlue/30"
                 >
@@ -164,18 +179,18 @@ export function FeedPost({
               )}
               <Badge className="text-xs bg-yellow-400/20 text-yellow-300 border-yellow-400/30">
                 <Star className="h-3 w-3 mr-1" />
-                {author.rating}
+                {authorRating}
               </Badge>
             </div>
           </div>
         </div>
 
-        {/* Image */}
-        {image && (
+        {/* Images */}
+        {images.length > 0 && (
           <div className="px-4 pb-3">
             <div className="rounded-xl overflow-hidden aspect-video bg-white/5">
               <img
-                src={image}
+                src={images[0]}
                 alt="Post"
                 className="w-full h-full object-cover"
               />
@@ -188,27 +203,29 @@ export function FeedPost({
           <div className="flex items-center justify-between">
             <div className="flex gap-4">
               <button
-                onClick={handleLike}
+                onClick={toggleLike}
+                disabled={likeLoading}
                 className={`flex items-center gap-1.5 transition-colors ${
                   liked ? "text-rose-400" : "text-muted hover:text-rose-400"
                 }`}
               >
                 <Heart className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
-                <span className="text-sm">{likes}</span>
+                <span className="text-sm">{post.likes_count}</span>
               </button>
               <button
                 onClick={() => setShowComments(!showComments)}
                 className="flex items-center gap-1.5 text-muted hover:text-electricBlue transition-colors"
               >
                 <MessageCircle className="h-5 w-5" />
-                <span className="text-sm">{initialComments}</span>
+                <span className="text-sm">{post.comments_count}</span>
               </button>
               <button className="flex items-center gap-1.5 text-muted hover:text-emerald transition-colors">
                 <Share2 className="h-5 w-5" />
               </button>
             </div>
             <button
-              onClick={() => setBookmarked(!bookmarked)}
+              onClick={toggleBookmark}
+              disabled={bookmarkLoading}
               className={`transition-colors ${
                 bookmarked ? "text-electricBlue" : "text-muted hover:text-electricBlue"
               }`}
@@ -236,6 +253,27 @@ export function FeedPost({
             animate={{ height: "auto" }}
             className="border-t border-white/10 px-4 py-3"
           >
+            {/* Existing comments */}
+            {comments.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {comments.map((comment) => {
+                  const commentAuthor = comment.author as { full_name: string } | undefined;
+                  return (
+                    <div key={comment.id} className="flex gap-2">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-xs font-semibold shrink-0">
+                        {(commentAuthor?.full_name || "U").charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{commentAuthor?.full_name || "Unknown"}</p>
+                        <p className="text-sm text-muted">{comment.content}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {/* Add comment */}
             <div className="flex gap-2">
               <div className="h-8 w-8 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-xs font-semibold shrink-0">
                 You
@@ -247,12 +285,18 @@ export function FeedPost({
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Write a comment..."
                   className="flex-1 bg-white/5 rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
+                  onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                 />
                 <button
-                  disabled={!commentText.trim()}
+                  onClick={handleAddComment}
+                  disabled={!commentText.trim() || submitting}
                   className="p-2 rounded-full bg-electricBlue/20 text-electricBlue disabled:opacity-50"
                 >
-                  <Send className="h-4 w-4" />
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>

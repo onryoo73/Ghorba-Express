@@ -10,23 +10,70 @@ import {
   ShoppingBag,
   X,
   Send,
-  Calendar
+  Calendar,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useCreatePost } from "@/lib/hooks/use-posts";
+import { useAuthSession } from "@/lib/use-auth-session";
+import { supabase } from "@/lib/supabase/client";
 
 type PostType = "request" | "trip" | null;
 
-export function PostComposer(): JSX.Element {
+interface PostComposerProps {
+  onPostCreated?: () => void;
+}
+
+export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(false);
   const [postType, setPostType] = useState<PostType>(null);
   const [content, setContent] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [date, setDate] = useState("");
+  const [kg, setKg] = useState("");
+  const [price, setPrice] = useState("");
+  const [reward, setReward] = useState("");
+  
+  const { createPost, loading } = useCreatePost();
+  const { user } = useAuthSession();
 
   const handleClose = () => {
     setIsExpanded(false);
     setPostType(null);
     setContent("");
+    setFrom("");
+    setTo("");
+    setDate("");
+    setKg("");
+    setPrice("");
+    setReward("");
+  };
+
+  const handleSubmit = async () => {
+    if (!user || !content.trim() || !postType) return;
+
+    try {
+      const postData = {
+        author_id: user.id,
+        type: postType,
+        content: content.trim(),
+        origin: from || null,
+        destination: to || null,
+        departure_date: postType === "trip" && date ? date : null,
+        weight_available_kg: postType === "trip" && kg ? parseFloat(kg) : null,
+        product_price_tnd: postType === "request" && price ? parseFloat(price) : null,
+        reward_tnd: postType === "request" && reward ? parseFloat(reward) : null,
+      };
+
+      await createPost(postData);
+      handleClose();
+      onPostCreated?.();
+    } catch (err) {
+      console.error("Failed to create post:", err);
+    }
   };
 
   const placeholderText =
@@ -153,6 +200,8 @@ export function PostComposer(): JSX.Element {
                         <MapPin className="h-4 w-4 text-electricBlue" />
                         <Input
                           placeholder="From (city)"
+                          value={from}
+                          onChange={(e) => setFrom(e.target.value)}
                           className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                         />
                       </div>
@@ -160,17 +209,33 @@ export function PostComposer(): JSX.Element {
                         <MapPin className="h-4 w-4 text-emerald" />
                         <Input
                           placeholder="To (city)"
+                          value={to}
+                          onChange={(e) => setTo(e.target.value)}
                           className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                         />
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5">
-                      <Package className="h-4 w-4 text-rose-300" />
-                      <Input
-                        placeholder="Product price + reward (TND)"
-                        type="number"
-                        className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                      />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5">
+                        <Package className="h-4 w-4 text-rose-300" />
+                        <Input
+                          placeholder="Product price (TND)"
+                          type="number"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5">
+                        <Package className="h-4 w-4 text-emerald" />
+                        <Input
+                          placeholder="Your reward (TND)"
+                          type="number"
+                          value={reward}
+                          onChange={(e) => setReward(e.target.value)}
+                          className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
+                        />
+                      </div>
                     </div>
                   </>
                 ) : (
@@ -180,6 +245,8 @@ export function PostComposer(): JSX.Element {
                         <MapPin className="h-4 w-4 text-electricBlue" />
                         <Input
                           placeholder="From (city)"
+                          value={from}
+                          onChange={(e) => setFrom(e.target.value)}
                           className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                         />
                       </div>
@@ -187,6 +254,8 @@ export function PostComposer(): JSX.Element {
                         <MapPin className="h-4 w-4 text-emerald" />
                         <Input
                           placeholder="To (city)"
+                          value={to}
+                          onChange={(e) => setTo(e.target.value)}
                           className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                         />
                       </div>
@@ -196,6 +265,8 @@ export function PostComposer(): JSX.Element {
                         <Calendar className="h-4 w-4 text-yellow-300" />
                         <Input
                           type="date"
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
                           className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                         />
                       </div>
@@ -204,6 +275,8 @@ export function PostComposer(): JSX.Element {
                         <Input
                           placeholder="Kg available"
                           type="number"
+                          value={kg}
+                          onChange={(e) => setKg(e.target.value)}
                           className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                         />
                       </div>
@@ -223,10 +296,15 @@ export function PostComposer(): JSX.Element {
                 </button>
               </div>
               <Button
-                disabled={!content.trim()}
+                disabled={!content.trim() || loading}
+                onClick={handleSubmit}
                 className="gap-2"
               >
-                <Send className="h-4 w-4" />
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
                 Post
               </Button>
             </div>

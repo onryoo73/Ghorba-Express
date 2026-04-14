@@ -4,90 +4,9 @@ import { motion } from "framer-motion";
 import { PostComposer } from "@/components/post-composer";
 import { FeedPost } from "@/components/feed-post";
 import { AppShell } from "@/components/app-shell";
-import { TrendingUp, Users, Package, Plane } from "lucide-react";
+import { TrendingUp, Users, Package, Plane, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-
-// Mock feed data - mixed requests and trips like Facebook
-const feedPosts = [
-  {
-    id: "1",
-    type: "request" as const,
-    author: { name: "Ines M.", rating: 4.9, verified: true },
-    content: "Hey everyone! Looking for someone coming from Paris to Tunis. I need a specific laptop charger (MacBook Pro 96W) that I can only find at Apple Store Champs-Élysées. Will pay full price + 50 TND reward! 💻",
-    from: "Paris",
-    to: "Tunis",
-    price: "120",
-    reward: "50",
-    likes: 12,
-    comments: 4,
-    timestamp: "2 hours ago"
-  },
-  {
-    id: "2",
-    type: "trip" as const,
-    author: { name: "Sami B.", rating: 4.9, verified: true },
-    content: "Flying Paris ✈️ Tunis this Friday! Have 7kg spare luggage space. Happy to bring small packages, electronics, or documents. DM me with details!",
-    from: "Paris",
-    to: "Tunis",
-    date: "26 Apr 2026",
-    kg: 7,
-    likes: 24,
-    comments: 8,
-    timestamp: "4 hours ago"
-  },
-  {
-    id: "3",
-    type: "request" as const,
-    author: { name: "Karim D.", rating: 4.7, verified: false },
-    content: "Anyone traveling from Istanbul to Sfax soon? Need some Turkish coffee and baklava from my favorite shop in Taksim. Can pay upfront with proof! ☕🥐",
-    from: "Istanbul",
-    to: "Sfax",
-    price: "80",
-    reward: "30",
-    likes: 8,
-    comments: 2,
-    timestamp: "6 hours ago"
-  },
-  {
-    id: "4",
-    type: "trip" as const,
-    author: { name: "Leila K.", rating: 4.8, verified: true },
-    content: "Business trip to Istanbul next week, coming back with half empty suitcase. Can bring fashion items, cosmetics, or small gadgets. First come first serve! 👜✨",
-    from: "Istanbul",
-    to: "Sfax",
-    date: "29 Apr 2026",
-    kg: 4,
-    likes: 18,
-    comments: 6,
-    timestamp: "8 hours ago"
-  },
-  {
-    id: "5",
-    type: "request" as const,
-    author: { name: "Yasmine R.", rating: 5.0, verified: true },
-    content: "Looking for Italian skincare products from Milan - specifically The Ordinary and some local pharmacy brands. Traveling to Nabeul area. Will make it worth your while! 🧴",
-    from: "Milan",
-    to: "Nabeul",
-    price: "200",
-    reward: "60",
-    likes: 15,
-    comments: 5,
-    timestamp: "12 hours ago"
-  },
-  {
-    id: "6",
-    type: "trip" as const,
-    author: { name: "Youssef A.", rating: 5.0, verified: true },
-    content: "Milan fashion week trip! 9kg available space. Perfect for clothing, shoes, accessories. Can pickup from anywhere in Milan city center. 🔥👟",
-    from: "Milan",
-    to: "Nabeul",
-    date: "02 May 2026",
-    kg: 9,
-    likes: 32,
-    comments: 12,
-    timestamp: "1 day ago"
-  }
-];
+import { usePosts } from "@/lib/hooks/use-posts";
 
 const stats = [
   { icon: Users, label: "Active Users", value: "2.4K", color: "text-electricBlue" },
@@ -97,6 +16,7 @@ const stats = [
 ];
 
 export default function Page(): JSX.Element {
+  const { posts, loading, error, refresh } = usePosts({ status: "active", limit: 20 });
   return (
     <AppShell>
       {/* Header Stats */}
@@ -160,12 +80,24 @@ export default function Page(): JSX.Element {
         {/* Main Feed */}
         <div className="lg:col-span-6 space-y-4">
           {/* Composer */}
-          <PostComposer />
+          <PostComposer onPostCreated={refresh} />
 
           {/* Feed Posts */}
+          {loading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-electricBlue" />
+            </div>
+          )}
+          
+          {error && (
+            <div className="text-center py-8 text-rose-300">
+              Failed to load posts. Please try again.
+            </div>
+          )}
+          
           <div className="space-y-4">
-            {feedPosts.map((post) => (
-              <FeedPost key={post.id} {...post} />
+            {posts.map((post) => (
+              <FeedPost key={post.id} post={post} />
             ))}
           </div>
 

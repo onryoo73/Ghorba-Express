@@ -1,68 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plane, MapPin, CalendarDays, Package, Search, Filter, TrendingUp } from "lucide-react";
+import { Plane, MapPin, CalendarDays, Package, Search, Filter, TrendingUp, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FeedPost } from "@/components/feed-post";
-
-// Traveler trips as social posts
-const travelerPosts = [
-  {
-    id: "t1",
-    type: "trip" as const,
-    author: { name: "Sami B.", rating: 4.9, verified: true },
-    content: "Flying Paris ✈️ Tunis this Friday! Have 7kg spare luggage space. Happy to bring small packages, electronics, or documents. DM me with details!",
-    from: "Paris",
-    to: "Tunis",
-    date: "26 Apr 2026",
-    kg: 7,
-    likes: 24,
-    comments: 8,
-    timestamp: "4 hours ago"
-  },
-  {
-    id: "t2",
-    type: "trip" as const,
-    author: { name: "Leila K.", rating: 4.8, verified: true },
-    content: "Business trip to Istanbul next week, coming back with half empty suitcase. Can bring fashion items, cosmetics, or small gadgets. First come first serve! 👜✨",
-    from: "Istanbul",
-    to: "Sfax",
-    date: "29 Apr 2026",
-    kg: 4,
-    likes: 18,
-    comments: 6,
-    timestamp: "8 hours ago"
-  },
-  {
-    id: "t3",
-    type: "trip" as const,
-    author: { name: "Youssef A.", rating: 5.0, verified: true },
-    content: "Milan fashion week trip! 9kg available space. Perfect for clothing, shoes, accessories. Can pickup from anywhere in Milan city center. 🔥👟",
-    from: "Milan",
-    to: "Nabeul",
-    date: "02 May 2026",
-    kg: 9,
-    likes: 32,
-    comments: 12,
-    timestamp: "1 day ago"
-  },
-  {
-    id: "t4",
-    type: "trip" as const,
-    author: { name: "Ahmed H.", rating: 4.7, verified: false },
-    content: "Going to Lyon for the weekend, coming back Sunday evening. 3kg space available. Can bring small items, documents, or medicines.",
-    from: "Lyon",
-    to: "Tunis",
-    date: "27 Apr 2026",
-    kg: 3,
-    likes: 9,
-    comments: 3,
-    timestamp: "2 days ago"
-  }
-];
+import { PostComposer } from "@/components/post-composer";
+import { usePosts } from "@/lib/hooks/use-posts";
 
 const popularRoutes = [
   { from: "Paris", to: "Tunis", trips: 12 },
@@ -73,6 +19,7 @@ const popularRoutes = [
 ];
 
 export default function TripsPage(): JSX.Element {
+  const { posts, loading, error, refresh } = usePosts({ type: "trip", status: "active", limit: 20 });
   return (
     <AppShell>
       {/* Header */}
@@ -127,10 +74,25 @@ export default function TripsPage(): JSX.Element {
             </div>
           </Card>
 
+          {/* Composer */}
+          <PostComposer onPostCreated={refresh} />
+
           {/* Feed */}
+          {loading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-electricBlue" />
+            </div>
+          )}
+          
+          {error && (
+            <div className="text-center py-8 text-rose-300">
+              Failed to load trips. Please try again.
+            </div>
+          )}
+          
           <div className="space-y-4">
-            {travelerPosts.map((post) => (
-              <FeedPost key={post.id} {...post} />
+            {posts.map((post) => (
+              <FeedPost key={post.id} post={post} />
             ))}
           </div>
 

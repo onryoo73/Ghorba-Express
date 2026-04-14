@@ -1,69 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ShoppingBag, MapPin, Package, Search, TrendingUp, ShieldCheck, Plus } from "lucide-react";
+import { ShoppingBag, MapPin, Package, Search, TrendingUp, ShieldCheck, Plus, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FeedPost } from "@/components/feed-post";
 import { PostComposer } from "@/components/post-composer";
-
-// Buyer requests as social posts
-const buyerRequests = [
-  {
-    id: "r1",
-    type: "request" as const,
-    author: { name: "Ines M.", rating: 4.9, verified: true },
-    content: "Hey everyone! Looking for someone coming from Paris to Tunis. I need a specific laptop charger (MacBook Pro 96W) that I can only find at Apple Store Champs-Élysées. Will pay full price + 50 TND reward! 💻",
-    from: "Paris",
-    to: "Tunis",
-    price: "120",
-    reward: "50",
-    likes: 12,
-    comments: 4,
-    timestamp: "2 hours ago"
-  },
-  {
-    id: "r2",
-    type: "request" as const,
-    author: { name: "Karim D.", rating: 4.7, verified: false },
-    content: "Anyone traveling from Istanbul to Sfax soon? Need some Turkish coffee and baklava from my favorite shop in Taksim. Can pay upfront with proof! ☕🥐",
-    from: "Istanbul",
-    to: "Sfax",
-    price: "80",
-    reward: "30",
-    likes: 8,
-    comments: 2,
-    timestamp: "6 hours ago"
-  },
-  {
-    id: "r3",
-    type: "request" as const,
-    author: { name: "Yasmine R.", rating: 5.0, verified: true },
-    content: "Looking for Italian skincare products from Milan - specifically The Ordinary and some local pharmacy brands. Traveling to Nabeul area. Will make it worth your while! 🧴",
-    from: "Milan",
-    to: "Nabeul",
-    price: "200",
-    reward: "60",
-    likes: 15,
-    comments: 5,
-    timestamp: "12 hours ago"
-  },
-  {
-    id: "r4",
-    type: "request" as const,
-    author: { name: "Mohamed A.", rating: 4.6, verified: false },
-    content: "Need children's books in French from any European city. Looking for educational books for ages 5-8. About 2-3kg max. Can meet anywhere in Tunis area.",
-    from: "Paris",
-    to: "Tunis",
-    price: "60",
-    reward: "25",
-    likes: 5,
-    comments: 1,
-    timestamp: "1 day ago"
-  }
-];
+import { usePosts } from "@/lib/hooks/use-posts";
 
 const popularNeeds = [
   { tag: "Electronics", count: 45 },
@@ -77,6 +22,7 @@ const popularNeeds = [
 const timeline = ["Deposited", "Funds Locked", "In Transit", "Delivered", "Released"];
 
 export default function OrdersPage(): JSX.Element {
+  const { posts, loading, error, refresh } = usePosts({ type: "request", status: "active", limit: 20 });
   return (
     <AppShell>
       {/* Header */}
@@ -132,12 +78,24 @@ export default function OrdersPage(): JSX.Element {
           </Card>
 
           {/* Composer */}
-          <PostComposer />
+          <PostComposer onPostCreated={refresh} />
 
           {/* Feed */}
+          {loading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-electricBlue" />
+            </div>
+          )}
+          
+          {error && (
+            <div className="text-center py-8 text-rose-300">
+              Failed to load requests. Please try again.
+            </div>
+          )}
+          
           <div className="space-y-4">
-            {buyerRequests.map((post) => (
-              <FeedPost key={post.id} {...post} />
+            {posts.map((post) => (
+              <FeedPost key={post.id} post={post} />
             ))}
           </div>
 
