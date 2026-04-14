@@ -36,15 +36,34 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
 
     setLoading(true);
     try {
-      // Create offer
+      // Calculate amounts
+      const PLATFORM_FEE_PERCENT = 5;
+      const proposedPrice = price ? parseFloat(price) : 0;
+      const itemPrice = post.product_price_tnd || 0;
+      const platformFee = proposedPrice * (PLATFORM_FEE_PERCENT / 100);
+      const totalAmount = isRequest 
+        ? itemPrice + proposedPrice + platformFee  // Buyer pays item + reward + fee
+        : proposedPrice + platformFee;  // Buyer pays delivery fee + platform fee
+
+      // Determine buyer and traveler
+      const buyerId = isRequest ? post.author_id : user.id;
+      const travelerId = isRequest ? user.id : post.author_id;
+
+      // Create offer with payment info
       const { data: offer, error: offerError } = await supabase
         .from("post_offers")
         .insert({
           post_id: post.id,
           offerer_id: user.id,
+          buyer_id: buyerId,
+          traveler_id: travelerId,
           message: message.trim(),
-          proposed_price_tnd: price ? parseFloat(price) : null,
-          status: "pending"
+          proposed_price_tnd: proposedPrice,
+          amount_tnd: totalAmount,
+          platform_fee_tnd: platformFee,
+          total_paid_tnd: totalAmount,
+          status: "pending",
+          payment_status: "pending"
         })
         .select()
         .single();
@@ -62,13 +81,14 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
         message: message.trim() || (isRequest ? "Someone wants to fulfill your request" : "Someone wants you to deliver")
       });
 
-      // Create chat thread
+      // Create chat thread with offer reference
       const { data: thread } = await supabase
         .from("chat_threads")
         .insert({
           post_id: post.id,
-          buyer_id: isRequest ? post.author_id : user.id,
-          traveler_id: isRequest ? user.id : post.author_id
+          buyer_id: buyerId,
+          traveler_id: travelerId,
+          offer_id: offer?.id
         })
         .select()
         .single();

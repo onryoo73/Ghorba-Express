@@ -11,7 +11,8 @@ import {
   Package,
   Shield,
   Truck,
-  User
+  User,
+  MessageSquare
 } from "lucide-react";
 import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,9 @@ export function DashboardSidebar({
     links.push({ href: "/dashboard/admin", label: "Admin", icon: Shield });
   }
   links.push({ href: "/orders", label: "Orders", icon: Package });
+  if (isAuthenticated) {
+    links.push({ href: "/messages", label: "Messages", icon: MessageSquare });
+  }
 
   return (
     <aside

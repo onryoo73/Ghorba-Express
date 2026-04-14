@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^6.2.0",
+    "@stripe/stripe-js": "^9.2.0",
     "@supabase/supabase-js": "^2.57.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.511.0",
     "next": "^14.2.32",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "stripe": "^22.0.1",
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {

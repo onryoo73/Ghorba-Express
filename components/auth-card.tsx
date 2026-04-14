@@ -54,48 +54,39 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
         setMessage("Logged in successfully.");
         onAuthenticated?.();
       } else {
+        // Simplified signup - no email confirmation
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-              role
-            }
-          }
+          password
         });
         if (signUpError) throw signUpError;
-        if (!signUpData.session) {
-          const { error: signInAfterSignUpError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-          if (signInAfterSignUpError) {
-            setMessage(
-              "Account created, but email confirmation is enabled. Confirm email, then log in."
-            );
-            setMode("login");
-            return;
-          }
-        }
-
-        const {
-          data: { user: sessionUser }
-        } = await supabase.auth.getUser();
-        const userId = sessionUser?.id ?? signUpData.user?.id;
+        
+        // Auto sign in after signup
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        if (signInError) throw signInError;
+        
+        const userId = signInData.user?.id || signUpData.user?.id;
         if (!userId) {
-          throw new Error("Could not resolve user id after signup.");
+          throw new Error("Could not get user id after signup.");
         }
 
-        const { error: profileUpsertError } = await supabase.from("profiles").upsert({
+        // Create profile with selected role
+        const { error: profileError } = await supabase.from("profiles").insert({
           id: userId,
           full_name: fullName,
           phone: phone || null,
           role
         });
-        if (profileUpsertError) throw profileUpsertError;
+        
+        // Ignore profile error if it already exists
+        if (profileError && !profileError.message.includes("duplicate")) {
+          console.warn("Profile creation warning:", profileError);
+        }
 
-        setMessage("Account created and logged in.");
+        setMessage("Account created! Welcome aboard.");
         onAuthenticated?.();
       }
     } catch (authError) {
