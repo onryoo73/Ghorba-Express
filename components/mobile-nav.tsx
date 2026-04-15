@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, PackageSearch, Wallet, ClipboardList, MessageSquare } from "lucide-react";
+import { Home, LayoutDashboard, PackageSearch, Wallet, ClipboardList, MessageSquare, User } from "lucide-react";
 import { useAuthSession } from "@/lib/use-auth-session";
 import { useUnreadMessageCount } from "@/lib/hooks/use-unread-count";
 import { cn } from "@/lib/utils";
 
-const items = [
+const items: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { href: "/", label: "Home", icon: Home },
   { href: "/trips", label: "Trips", icon: PackageSearch },
   { href: "/orders", label: "Orders", icon: ClipboardList },
   { href: "/messages", label: "Messages", icon: MessageSquare },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
+  { href: "/profile", label: "Profile", icon: User },
   { href: "/dashboard", label: "Dash", icon: LayoutDashboard }
-] as const;
+];
 
 export function MobileNav({ isAuthenticated }: { isAuthenticated: boolean }): JSX.Element {
   const pathname = usePathname();
@@ -34,7 +34,7 @@ export function MobileNav({ isAuthenticated }: { isAuthenticated: boolean }): JS
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href as any}
               className={cn(
                 "flex flex-col items-center justify-center rounded-xl py-2 text-[11px] transition relative",
                 active ? "bg-electricBlue text-white" : "text-muted"

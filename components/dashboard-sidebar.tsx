@@ -12,7 +12,8 @@ import {
   Shield,
   Truck,
   User,
-  MessageSquare
+  MessageSquare,
+  Settings
 } from "lucide-react";
 import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export function DashboardSidebar({
 }: DashboardSidebarProps): JSX.Element {
   const pathname = usePathname();
 
-  const links: { href: Route; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  const links: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { href: "/", label: "Home", icon: Home },
     { href: "/dashboard", label: "Hub", icon: LayoutDashboard }
   ];
@@ -54,6 +55,7 @@ export function DashboardSidebar({
   links.push({ href: "/orders", label: "Orders", icon: Package });
   if (isAuthenticated) {
     links.push({ href: "/messages", label: "Messages", icon: MessageSquare });
+    links.push({ href: "/profile", label: "Profile", icon: Settings });
   }
 
   return (
@@ -80,7 +82,7 @@ export function DashboardSidebar({
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href as any}
                 className={cn(
                   "flex items-center rounded-xl px-3 py-2 text-sm transition",
                   active ? "bg-electricBlue text-white" : "text-muted hover:bg-white/5 hover:text-foreground",
