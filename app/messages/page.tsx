@@ -17,7 +17,8 @@ import {
   CreditCard,
   QrCode,
   Scan,
-  XCircle
+  XCircle,
+  MessageCircle
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
@@ -43,8 +44,13 @@ interface ChatThread {
   unread_count?: number;
   // Payment fields
   payment_intent_id?: string;
-  payment_status?: "awaiting_acceptance" | "pending" | "authorized" | "captured" | "failed" | "refunded";
-  amount_tnd?: number;
+  payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "authorized" | "captured" | "failed" | "refunded";
+  amount_tnd?: number; // Total buyer pays
+  item_price_tnd?: number; // Item cost
+  proposed_price_tnd?: number; // Traveler reward
+  platform_fee_tnd?: number; // Platform fee
+  platform_fee_rate?: number; // Fee percentage
+  total_paid_tnd?: number; // Total paid
   delivery_status?: "pending" | "in_transit" | "delivered" | "confirmed";
   offer_status?: "pending" | "accepted" | "declined" | "cancelled";
 }
@@ -59,6 +65,16 @@ interface ChatMessage {
   sender?: { full_name: string };
 }
 
+// Tiered platform fee calculation helper
+const calculateTieredFee = (amount: number): { fee: number; rate: number; total: number } => {
+  let rate = 5; // 0-500 TND: 5%
+  if (amount > 800) rate = 2; // 800+ TND: 2%
+  else if (amount > 500) rate = 3; // 500-800 TND: 3%
+  
+  const fee = amount * (rate / 100);
+  return { fee, rate, total: amount + fee };
+};
+
 export default function MessagesPage(): JSX.Element {
   const { user, isAuthenticated } = useAuthSession();
   const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -72,6 +88,9 @@ export default function MessagesPage(): JSX.Element {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState<"generate" | "scan">("generate");
+  
+  // Agreed amount input (buyer enters what they agreed on)
+  const [agreedAmount, setAgreedAmount] = useState<string>("");
 
   // Fetch threads
   useEffect(() => {
@@ -96,11 +115,16 @@ export default function MessagesPage(): JSX.Element {
           ...t,
           other_user: t.buyer_id === user.id ? t.traveler : t.buyer,
           last_message: { message: "No messages yet", created_at: t.created_at },
-          // Map offer payment data
+          // Map offer payment data with new breakdown fields
           offer_id: t.offer?.id,
           payment_intent_id: t.offer?.payment_intent_id,
           payment_status: t.offer?.payment_status,
-          amount_tnd: t.offer?.amount_tnd,
+          amount_tnd: t.offer?.total_paid_tnd || t.offer?.amount_tnd,
+          item_price_tnd: t.offer?.item_price_tnd || t.post?.product_price_tnd,
+          proposed_price_tnd: t.offer?.proposed_price_tnd,
+          platform_fee_tnd: t.offer?.platform_fee_tnd,
+          platform_fee_rate: t.offer?.platform_fee_rate || 5,
+          total_paid_tnd: t.offer?.total_paid_tnd,
           delivery_status: t.delivery_status,
           offer_status: t.offer?.status
         }));
@@ -110,6 +134,36 @@ export default function MessagesPage(): JSX.Element {
     };
 
     fetchThreads();
+    
+    // Subscribe to thread updates and new threads (user-specific channel)
+    if (!supabase || !user) return;
+    
+    const userChannel = supabase
+      .channel(`user_${user.id}_updates`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'chat_threads',
+        filter: `buyer_id=eq.${user.id}`
+      }, () => fetchThreads())
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'chat_threads',
+        filter: `traveler_id=eq.${user.id}`
+      }, () => fetchThreads())
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'post_offers'
+      }, () => fetchThreads())
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+    
+    return () => {
+      userChannel.unsubscribe();
+    };
   }, [user]);
 
   // Fetch messages when thread selected
@@ -130,34 +184,67 @@ export default function MessagesPage(): JSX.Element {
     fetchMessages();
 
     // Subscribe to new messages
-    if (!supabase) return;
-    const subscription = supabase
-      .channel(`chat_${selectedThread.id}`)
+    if (!supabase || !user) return;
+    
+    const msgChannel = supabase
+      .channel(`chat_${selectedThread.id}_${user.id}`)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
         table: "chat_messages",
         filter: `thread_id=eq.${selectedThread.id}`
       }, (payload) => {
-        setMessages((prev) => [...prev, payload.new as ChatMessage]);
+        // Only add if not already in list (avoid duplicates from optimistic update)
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === payload.new.id);
+          if (exists) return prev;
+          return [...prev, payload.new as ChatMessage];
+        });
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Chat subscription status:', status);
+      });
 
     return () => {
-      subscription.unsubscribe();
+      msgChannel.unsubscribe();
     };
   }, [selectedThread]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedThread || !user || !supabase) return;
 
-    await supabase.from("chat_messages").insert({
+    const messageText = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
+    
+    // Optimistic update - add message immediately
+    const optimisticMessage: ChatMessage = {
+      id: tempId,
       thread_id: selectedThread.id,
       sender_id: user.id,
-      message: newMessage.trim()
-    });
-
+      message: messageText,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      sender: { full_name: user.user_metadata?.full_name || 'You' }
+    };
+    
+    setMessages(prev => [...prev, optimisticMessage]);
     setNewMessage("");
+
+    // Send to server
+    const { data, error } = await supabase.from("chat_messages").insert({
+      thread_id: selectedThread.id,
+      sender_id: user.id,
+      message: messageText
+    }).select('*, sender:profiles(full_name)').single();
+    
+    if (error) {
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      console.error('Failed to send message:', error);
+    } else if (data) {
+      // Replace optimistic message with real one
+      setMessages(prev => prev.map(m => m.id === tempId ? (data as ChatMessage) : m));
+    }
   };
 
   const formatTime = (date: string) => {
@@ -337,15 +424,16 @@ export default function MessagesPage(): JSX.Element {
 
                   {/* Payment & Delivery Actions */}
                   <div className="px-4 py-3 bg-white/5 border-y border-white/10">
-                    {/* STEP 1: Offer Pending - Traveler needs to accept/reject */}
-                    {(selectedThread.offer_status === "pending" || selectedThread.payment_status === "awaiting_acceptance") && (
+                    {/* STEP 0: Initial Offer - Post author needs to accept to start chat */}
+                    {selectedThread.offer_status === "pending" && (
                       <>
-                        {selectedThread.traveler_id === user?.id ? (
-                          // Traveler sees Accept/Decline buttons
+                        {selectedThread.post?.author_id === user?.id || 
+                         (selectedThread.post?.type === "trip" && selectedThread.traveler_id === user?.id) ? (
+                          // Post author sees Accept/Decline
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-amber" />
-                              <span className="text-sm text-amber">New offer received - {selectedThread.amount_tnd?.toFixed(2)} TND</span>
+                              <span className="text-sm text-amber">New {selectedThread.post?.type === "request" ? "delivery offer" : "delivery request"}</span>
                             </div>
                             <div className="flex gap-2">
                               <button
@@ -355,36 +443,39 @@ export default function MessagesPage(): JSX.Element {
                                       .from("post_offers")
                                       .update({ 
                                         status: "accepted",
-                                        payment_status: "pending" // Now buyer can pay
+                                        payment_status: "awaiting_acceptance"
                                       })
                                       .eq("id", selectedThread.offer_id);
                                     
-                                    // Notify buyer
+                                    // Notify the other party
+                                    const notifyId = selectedThread.post?.type === "request" 
+                                      ? selectedThread.traveler_id 
+                                      : selectedThread.buyer_id;
+                                    
                                     await supabase.from("notifications").insert({
-                                      recipient_id: selectedThread.buyer_id,
-                                      sender_id: user.id,
+                                      recipient_id: notifyId,
+                                      sender_id: user?.id,
                                       type: "offer",
                                       title: "Offer accepted!",
-                                      message: "Your offer was accepted. Click here to complete payment."
+                                      message: "Let's discuss the details and agree on a price."
                                     });
                                     
-                                    // Update local state
                                     setThreads(prev => prev.map(t => 
                                       t.id === selectedThread.id 
-                                        ? { ...t, offer_status: "accepted", payment_status: "pending" }
+                                        ? { ...t, offer_status: "accepted", payment_status: "awaiting_acceptance" }
                                         : t
                                     ));
                                     setSelectedThread(prev => prev ? {
                                       ...prev, 
                                       offer_status: "accepted",
-                                      payment_status: "pending"
+                                      payment_status: "awaiting_acceptance"
                                     } : null);
                                   }
                                 }}
                                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
                               >
                                 <CheckCircle2 className="h-4 w-4" />
-                                Accept Offer
+                                Accept & Chat
                               </button>
                               <button
                                 onClick={async () => {
@@ -394,13 +485,16 @@ export default function MessagesPage(): JSX.Element {
                                       .update({ status: "declined" })
                                       .eq("id", selectedThread.offer_id);
                                     
-                                    // Notify buyer
+                                    const notifyId = selectedThread.post?.type === "request" 
+                                      ? selectedThread.traveler_id 
+                                      : selectedThread.buyer_id;
+                                    
                                     await supabase.from("notifications").insert({
-                                      recipient_id: selectedThread.buyer_id,
-                                      sender_id: user.id,
+                                      recipient_id: notifyId,
+                                      sender_id: user?.id,
                                       type: "offer",
                                       title: "Offer declined",
-                                      message: "Your offer was declined. You can make a new offer."
+                                      message: "Sorry, this won't work for me."
                                     });
                                     
                                     setThreads(prev => prev.map(t => 
@@ -422,30 +516,227 @@ export default function MessagesPage(): JSX.Element {
                             </div>
                           </div>
                         ) : (
-                          // Buyer waiting for traveler to accept
+                          // Waiting for post author to accept
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-amber" />
-                            <span className="text-sm text-amber">Waiting for traveler to accept your offer...</span>
+                            <span className="text-sm text-amber">Waiting for response...</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* STEP 1: Chatting - Buyer proposes amount */}
+                    {selectedThread.offer_status === "accepted" && !selectedThread.proposed_price_tnd && selectedThread.payment_status === "awaiting_acceptance" && (
+                      <>
+                        {selectedThread.buyer_id === user?.id ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <MessageCircle className="h-4 w-4 text-electricBlue" />
+                              <span className="text-sm">Agreed on a price? Enter the amount and send for approval</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <div className="flex-1 relative">
+                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                                <input
+                                  type="number"
+                                  placeholder="Enter agreed amount (TND)"
+                                  value={agreedAmount}
+                                  onChange={(e) => setAgreedAmount(e.target.value)}
+                                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-electricBlue/50"
+                                />
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  if (!agreedAmount || parseFloat(agreedAmount) <= 0 || !supabase || !selectedThread.offer_id) return;
+                                  
+                                  // Save proposed amount and update status
+                                  await supabase
+                                    .from("post_offers")
+                                    .update({ 
+                                      proposed_price_tnd: parseFloat(agreedAmount),
+                                      payment_status: "pending" // Now traveler sees it
+                                    })
+                                    .eq("id", selectedThread.offer_id);
+                                  
+                                  // Notify traveler
+                                  await supabase.from("notifications").insert({
+                                    recipient_id: selectedThread.traveler_id,
+                                    sender_id: user?.id,
+                                    type: "offer",
+                                    title: "Price proposed!",
+                                    message: `Buyer proposed ${agreedAmount} TND. Accept to proceed with payment.`
+                                  });
+                                  
+                                  // Update local state
+                                  setThreads(prev => prev.map(t => 
+                                    t.id === selectedThread.id 
+                                      ? { ...t, proposed_price_tnd: parseFloat(agreedAmount), payment_status: "pending" }
+                                      : t
+                                  ));
+                                  setSelectedThread(prev => prev ? {
+                                    ...prev, 
+                                    proposed_price_tnd: parseFloat(agreedAmount),
+                                    payment_status: "pending"
+                                  } : null);
+                                }}
+                                disabled={!agreedAmount || parseFloat(agreedAmount) <= 0}
+                                className="flex items-center gap-2 px-4 py-2 bg-electricBlue rounded-lg text-sm font-medium hover:bg-electricBlue/80 transition-colors disabled:opacity-50"
+                              >
+                                <Send className="h-4 w-4" />
+                                Send
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-amber" />
+                            <span className="text-sm text-amber">Waiting for buyer to propose a price...</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* STEP 2: Amount Proposed - Traveler accepts/declines */}
+                    {selectedThread.offer_status === "accepted" && selectedThread.proposed_price_tnd && selectedThread.payment_status === "pending" && (
+                      <>
+                        {selectedThread.traveler_id === user?.id ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-emerald" />
+                              <span className="text-sm">Buyer proposed: <span className="font-bold text-emerald">{selectedThread.proposed_price_tnd.toFixed(2)} TND</span></span>
+                            </div>
+                            {(() => {
+                              const { fee, rate, total } = calculateTieredFee(selectedThread.proposed_price_tnd || 0);
+                              return (
+                                <p className="text-xs text-muted">
+                                  You'll receive: {selectedThread.proposed_price_tnd?.toFixed(2)} TND after delivery
+                                  <br />
+                                  Buyer pays: {total.toFixed(2)} TND (includes {rate}% platform fee)
+                                </p>
+                              );
+                            })()}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={async () => {
+                                  if (supabase && selectedThread.offer_id) {
+                                    await supabase
+                                      .from("post_offers")
+                                      .update({ 
+                                        payment_status: "awaiting_payment" // Now buyer can pay
+                                      })
+                                      .eq("id", selectedThread.offer_id);
+                                    
+                                    // Notify buyer
+                                    await supabase.from("notifications").insert({
+                                      recipient_id: selectedThread.buyer_id,
+                                      sender_id: user?.id,
+                                      type: "offer",
+                                      title: "Price accepted!",
+                                      message: `I accepted your offer of ${selectedThread.proposed_price_tnd?.toFixed(2)} TND. You can now complete the payment.`
+                                    });
+                                    
+                                    setThreads(prev => prev.map(t => 
+                                      t.id === selectedThread.id 
+                                        ? { ...t, payment_status: "awaiting_payment" }
+                                        : t
+                                    ));
+                                    setSelectedThread(prev => prev ? {
+                                      ...prev, 
+                                      payment_status: "awaiting_payment"
+                                    } : null);
+                                  }
+                                }}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                                Accept Amount
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (supabase && selectedThread.offer_id) {
+                                    // Reset proposed amount
+                                    await supabase
+                                      .from("post_offers")
+                                      .update({ 
+                                        proposed_price_tnd: null,
+                                        payment_status: "awaiting_acceptance"
+                                      })
+                                      .eq("id", selectedThread.offer_id);
+                                    
+                                    // Notify buyer
+                                    await supabase.from("notifications").insert({
+                                      recipient_id: selectedThread.buyer_id,
+                                      sender_id: user?.id,
+                                      type: "offer",
+                                      title: "Price declined",
+                                      message: "Let's negotiate a different price. Send a new proposal."
+                                    });
+                                    
+                                    setThreads(prev => prev.map(t => 
+                                      t.id === selectedThread.id 
+                                        ? { ...t, proposed_price_tnd: undefined, payment_status: "awaiting_acceptance" }
+                                        : t
+                                    ));
+                                    setSelectedThread(prev => prev ? {
+                                      ...prev, 
+                                      proposed_price_tnd: undefined,
+                                      payment_status: "awaiting_acceptance"
+                                    } : null);
+                                  }
+                                }}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-rose-400/20 text-rose-300 rounded-lg text-sm font-medium hover:bg-rose-400/30 transition-colors"
+                              >
+                                <XCircle className="h-4 w-4" />
+                                Decline
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-amber" />
+                            <span className="text-sm text-amber">Waiting for traveler to accept {selectedThread.proposed_price_tnd?.toFixed(2)} TND...</span>
                           </div>
                         )}
                       </>
                     )}
                     
-                    {/* STEP 2: Offer Accepted - Buyer needs to pay */}
-                    {selectedThread.offer_status === "accepted" && selectedThread.payment_status === "pending" && (
+                    {/* STEP 3: Amount Accepted - Buyer pays */}
+                    {selectedThread.offer_status === "accepted" && selectedThread.proposed_price_tnd && selectedThread.payment_status === "awaiting_payment" && (
                       <>
                         {selectedThread.buyer_id === user?.id ? (
-                          <div className="flex items-center justify-between">
+                          <div className="space-y-3">
                             <div className="flex items-center gap-2">
                               <ShieldCheck className="h-4 w-4 text-emerald" />
-                              <span className="text-sm text-emerald">Offer accepted! Complete payment to proceed</span>
+                              <span className="text-sm text-emerald">Traveler accepted {selectedThread.proposed_price_tnd.toFixed(2)} TND</span>
                             </div>
+                            {(() => {
+                              const { fee, rate, total } = calculateTieredFee(selectedThread.proposed_price_tnd || 0);
+                              return (
+                                <div className="bg-white/5 rounded-lg p-3 space-y-1">
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Agreed amount</span>
+                                    <span>{selectedThread.proposed_price_tnd?.toFixed(2)} TND</span>
+                                  </div>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted">Platform fee ({rate}%)</span>
+                                    <span className="text-amber">+{fee.toFixed(2)} TND</span>
+                                  </div>
+                                  <div className="flex justify-between font-semibold border-t border-white/10 pt-1">
+                                    <span>Total to pay</span>
+                                    <span className="text-electricBlue">{total.toFixed(2)} TND</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                             <button
-                              onClick={() => setShowPaymentModal(true)}
-                              className="flex items-center gap-2 px-4 py-2 bg-electricBlue rounded-lg text-sm font-medium hover:bg-electricBlue/80 transition-colors"
+                              onClick={() => {
+                                setAgreedAmount(selectedThread.proposed_price_tnd?.toString() || "");
+                                setShowPaymentModal(true);
+                              }}
+                              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-electricBlue rounded-lg text-sm font-medium hover:bg-electricBlue/80 transition-colors"
                             >
                               <CreditCard className="h-4 w-4" />
-                              Pay {selectedThread.amount_tnd?.toFixed(2)} TND
+                              Complete Payment
                             </button>
                           </div>
                         ) : (
@@ -591,12 +882,12 @@ export default function MessagesPage(): JSX.Element {
         <PaymentModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          amount={selectedThread.amount_tnd || 50}
-          currency="usd"
+          agreedAmount={parseFloat(agreedAmount) || 0}
           offerId={selectedThread.offer_id || ""}
           buyerId={selectedThread.buyer_id}
           travelerId={selectedThread.traveler_id}
           itemDescription={selectedThread.post?.content?.slice(0, 50) || "Delivery service"}
+          onAgreedAmountUpdate={setAgreedAmount}
           onPaymentSuccess={async (paymentRef) => {
             // Update database with payment - now authorized (held in escrow)
             if (supabase && selectedThread.offer_id) {

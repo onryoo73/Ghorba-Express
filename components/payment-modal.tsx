@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShieldCheck, CheckCircle2, ExternalLink, Wallet, AlertTriangle } from "lucide-react";
+import { X, ShieldCheck, CheckCircle2, ExternalLink, Wallet, AlertTriangle, DollarSign, Calculator, Edit2, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/lib/use-auth-session";
@@ -10,23 +10,34 @@ import { useAuthSession } from "@/lib/use-auth-session";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  amount: number; // in TND
-  currency?: string;
+  agreedAmount: number; // Amount buyer and traveler agreed on (traveler receives this)
   offerId: string;
   buyerId: string;
   travelerId: string;
   itemDescription: string;
+  onAgreedAmountUpdate?: (amount: string) => void; // To update parent state if edited
   onPaymentSuccess: (paymentRef: string) => void;
 }
+
+// Tiered platform fee calculation
+const calculateFee = (amount: number): { fee: number; rate: number; total: number } => {
+  let rate = 5; // Default 5%
+  if (amount > 800) rate = 2;
+  else if (amount > 500) rate = 3;
+  
+  const fee = amount * (rate / 100);
+  return { fee, rate, total: amount + fee };
+};
 
 export function PaymentModal({
   isOpen,
   onClose,
-  amount,
+  agreedAmount,
   offerId,
   buyerId,
   travelerId,
   itemDescription,
+  onAgreedAmountUpdate,
   onPaymentSuccess
 }: PaymentModalProps): JSX.Element | null {
   const { user } = useAuthSession();
@@ -36,6 +47,12 @@ export function PaymentModal({
   const [paymentRef, setPaymentRef] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMockMode, setIsMockMode] = useState(false);
+  const [isEditingAmount, setIsEditingAmount] = useState(false);
+  const [editedAmount, setEditedAmount] = useState(agreedAmount.toString());
+  
+  // Calculate breakdown based on current amount
+  const currentAmount = isEditingAmount ? parseFloat(editedAmount) || 0 : agreedAmount;
+  const { fee, rate, total } = useMemo(() => calculateFee(currentAmount), [currentAmount]);
 
   // Create Konnect payment when modal opens
   const createPayment = async () => {
@@ -49,7 +66,9 @@ export function PaymentModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount,
+          amount: total, // Total including platform fee
+          agreedAmount: currentAmount, // What traveler gets
+          platformFee: fee,
           offerId,
           buyerId,
           travelerId,
@@ -103,7 +122,16 @@ export function PaymentModal({
     setSuccess(false);
     setError(null);
     setIsMockMode(false);
+    setIsEditingAmount(false);
     onClose();
+  };
+  
+  const handleSaveAmount = () => {
+    const newAmount = parseFloat(editedAmount);
+    if (newAmount > 0 && onAgreedAmountUpdate) {
+      onAgreedAmountUpdate(editedAmount);
+    }
+    setIsEditingAmount(false);
   };
 
   if (!isOpen) return null;
@@ -182,11 +210,59 @@ export function PaymentModal({
                     </div>
                   )}
                   
-                  {/* Amount Display */}
-                  <div className="bg-white/5 rounded-xl p-4 text-center">
-                    <p className="text-sm text-muted mb-1">Total Amount</p>
-                    <p className="text-3xl font-bold">{amount.toFixed(2)} TND</p>
-                    <p className="text-xs text-muted mt-1">{itemDescription}</p>
+                  {/* Simple Price Breakdown */}
+                  <div className="bg-white/5 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Calculator className="h-4 w-4 text-electricBlue" />
+                      <span className="text-sm font-medium">Simple Pricing</span>
+                    </div>
+                    
+                    {/* Agreed Amount - Editable */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted">You agreed on</span>
+                        {isEditingAmount ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={editedAmount}
+                              onChange={(e) => setEditedAmount(e.target.value)}
+                              className="w-24 px-2 py-1 rounded bg-white/10 text-right text-sm"
+                              autoFocus
+                            />
+                            <button onClick={handleSaveAmount} className="p-1 rounded hover:bg-white/10">
+                              <Check className="h-4 w-4 text-emerald" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{currentAmount.toFixed(2)} TND</span>
+                            <button 
+                              onClick={() => setIsEditingAmount(true)}
+                              className="p-1 rounded hover:bg-white/10"
+                            >
+                              <Edit2 className="h-3 w-3 text-muted" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted">Traveler receives this amount after delivery</p>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm border-t border-white/10 pt-2">
+                      <span className="text-muted flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Platform fee ({rate}%)
+                      </span>
+                      <span className="text-amber">+{fee.toFixed(2)} TND</span>
+                    </div>
+                    
+                    <div className="border-t border-white/20 pt-3 flex justify-between">
+                      <span className="font-semibold">Total you pay</span>
+                      <span className="font-bold text-xl text-electricBlue">{total.toFixed(2)} TND</span>
+                    </div>
+                    
+                    <p className="text-xs text-muted mt-2">{itemDescription}</p>
                   </div>
 
                   {/* Payment Methods - hide in mock mode */}
