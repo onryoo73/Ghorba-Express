@@ -99,29 +99,34 @@ export default function MessagesPage(): JSX.Element {
   // Agreed amount input (buyer enters what they agreed on)
   const [agreedAmount, setAgreedAmount] = useState<string>("");
 
-  // Fetch threads
-  useEffect(() => {
-    if (!user) return;
+  const fetchThreads = async () => {
+    if (!supabase || !user) return;
+    const { data } = await supabase
+      .from("chat_threads")
+      .select(`
+        *,
+        post:posts(*, author:profiles(full_name)),
+        buyer:profiles!buyer_id(full_name, id),
+        traveler:profiles!traveler_id(full_name, id),
+        offer:post_offers(*),
+        messages:chat_messages(message, created_at, sender_id)
+      `)
+      .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`)
+      .order("updated_at", { ascending: false })
+      .limit(1, { foreignTable: 'chat_messages' })
+      .order('created_at', { foreignTable: 'chat_messages', ascending: false });
 
-    const fetchThreads = async () => {
-      if (!supabase) return;
-      const { data } = await supabase
-        .from("chat_threads")
-        .select(`
-          *,
-          post:posts(*, author:profiles(full_name)),
-          buyer:profiles!buyer_id(full_name, id),
-          traveler:profiles!traveler_id(full_name, id),
-          offer:post_offers(*)
-        `)
-        .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`)
-        .order("created_at", { ascending: false });
-
-      if (data) {
-        const formatted = data.map((t: any) => ({
+    if (data) {
+      const formatted = data.map((t: any) => {
+        const lastMsg = t.messages?.[0];
+        return {
           ...t,
           other_user: t.buyer_id === user.id ? t.traveler : t.buyer,
-          last_message: { message: "No messages yet", created_at: t.created_at },
+          last_message: lastMsg ? { 
+            message: lastMsg.message, 
+            created_at: lastMsg.created_at,
+            sender_id: lastMsg.sender_id
+          } : { message: "No messages yet", created_at: t.created_at },
           // Map offer payment data with new breakdown fields
           offer_id: t.offer?.id,
           payment_intent_id: t.offer?.payment_intent_id,
@@ -140,15 +145,26 @@ export default function MessagesPage(): JSX.Element {
           buyer_confirmed_receipt: t.offer?.buyer_confirmed_receipt,
           otp_verified: t.offer?.otp_verified,
           payment_released: t.offer?.payment_released
-        }));
-        setThreads(formatted);
-      }
-      setLoading(false);
-    };
+        };
+      });
+      setThreads(formatted);
+      
+      // Update selected thread if it exists to reflect real-time changes
+      setSelectedThread(prev => {
+        if (!prev) return null;
+        const updated = formatted.find(t => t.id === prev.id);
+        return updated || prev;
+      });
+    }
+    setLoading(false);
+  };
 
+  // Fetch threads initially and on user change
+  useEffect(() => {
+    if (!user) return;
     fetchThreads();
     
-    // Subscribe to thread updates and new threads (user-specific channel)
+    // Subscribe to thread updates and new threads
     if (!supabase || !user) return;
     
     const userChannel = supabase
@@ -156,26 +172,77 @@ export default function MessagesPage(): JSX.Element {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'chat_threads',
-        filter: `buyer_id=eq.${user.id}`
-      }, () => fetchThreads())
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'chat_threads',
-        filter: `traveler_id=eq.${user.id}`
-      }, () => fetchThreads())
+        table: 'chat_threads'
+      }, (payload) => {
+        console.log('[Realtime] Thread change detected:', payload.eventType);
+        fetchThreads();
+      })
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'post_offers'
+      }, (payload) => {
+        console.log('[Realtime] Offer update detected:', payload.new.id);
+        const newOffer = payload.new;
+        
+        // Optimistic update for the threads list to make it "instant"
+        setThreads(prev => prev.map(t => {
+          if (t.offer_id === newOffer.id) {
+            return {
+              ...t,
+              payment_status: newOffer.payment_status,
+              delivery_status: newOffer.delivery_status,
+              delivery_otp: newOffer.delivery_otp,
+              traveler_confirmed_delivery: newOffer.traveler_confirmed_delivery,
+              buyer_confirmed_receipt: newOffer.buyer_confirmed_receipt,
+              otp_verified: newOffer.otp_verified,
+              payment_released: newOffer.payment_released
+            };
+          }
+          return t;
+        }));
+
+        // Also update selected thread immediately
+        setSelectedThread(prev => {
+          if (prev && prev.offer_id === newOffer.id) {
+            return {
+              ...prev,
+              payment_status: newOffer.payment_status,
+              delivery_status: newOffer.delivery_status,
+              delivery_otp: newOffer.delivery_otp,
+              traveler_confirmed_delivery: newOffer.traveler_confirmed_delivery,
+              buyer_confirmed_receipt: newOffer.buyer_confirmed_receipt,
+              otp_verified: newOffer.otp_verified,
+              payment_released: newOffer.payment_released
+            };
+          }
+          return prev;
+        });
+
+        // Still refetch to ensure all joined data (like post info) is correct
+        fetchThreads();
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'post_offers'
       }, () => fetchThreads())
       .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
+        console.log('[Realtime] Global subscription status:', status);
       });
+
+    // Handle window focus - force refetch to ensure we're up to date
+    // This solves the "switch apps" issue where background tabs might miss updates
+    const handleFocus = () => {
+      console.log('[App] Window focused, refreshing data...');
+      fetchThreads();
+    };
+    
+    window.addEventListener('focus', handleFocus);
     
     return () => {
       userChannel.unsubscribe();
+      window.removeEventListener('focus', handleFocus);
     };
   }, [user]);
 
@@ -207,16 +274,42 @@ export default function MessagesPage(): JSX.Element {
         table: "chat_messages",
         filter: `thread_id=eq.${selectedThread.id}`
       }, (payload) => {
+        console.log('[Realtime] New message received');
         // Only add if not already in list (avoid duplicates from optimistic update)
         setMessages((prev) => {
           const exists = prev.some(m => m.id === payload.new.id);
           if (exists) return prev;
-          return [...prev, payload.new as ChatMessage];
+          
+          const newMsg = payload.new as ChatMessage;
+          // Enrich with sender name if missing from payload
+          if (!newMsg.sender) {
+            const isMe = newMsg.sender_id === user.id;
+            newMsg.sender = { 
+              full_name: isMe 
+                ? (user.user_metadata?.full_name || 'You') 
+                : (selectedThread.other_user?.full_name || 'User')
+            };
+          }
+          return [...prev, newMsg];
         });
       })
-      .subscribe((status) => {
-        console.log('Chat subscription status:', status);
-      });
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "chat_messages",
+        filter: `thread_id=eq.${selectedThread.id}`
+      }, (payload) => {
+        setMessages((prev) => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
+      })
+      .on("postgres_changes", {
+        event: "DELETE",
+        schema: "public",
+        table: "chat_messages",
+        filter: `thread_id=eq.${selectedThread.id}`
+      }, (payload) => {
+        setMessages((prev) => prev.filter(m => m.id !== payload.old.id));
+      })
+      .subscribe();
 
     return () => {
       msgChannel.unsubscribe();
