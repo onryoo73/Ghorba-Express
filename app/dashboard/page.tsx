@@ -58,20 +58,20 @@ export default function DashboardPage(): JSX.Element {
     const loadDashboardData = async () => {
       try {
         // Load orders data
-        const { data: ordersData } = await supabase
+        const { data: ordersData } = await supabase!
           .from("post_offers")
           .select("payment_status, amount_tnd, buyer_id, traveler_id")
           .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`);
 
         // Load trips data
-        const { data: tripsData } = await supabase
+        const { data: tripsData } = await supabase!
           .from("posts")
           .select("status, type")
           .eq("author_id", user.id)
           .eq("type", "trip");
 
         // Load unread messages
-        const { count: unreadCount } = await supabase
+        const { count: unreadCount } = await supabase!
           .from("chat_messages")
           .select("*", { count: "exact" })
           .eq("recipient_id", user.id)
@@ -197,7 +197,7 @@ export default function DashboardPage(): JSX.Element {
     href: string, 
     color: string 
   }) => (
-    <Link href={href}>
+    <Link href={href as any}>
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

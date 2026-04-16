@@ -6,4 +6,6 @@ export interface Profile {
   full_name: string | null;
   phone: string | null;
   role: UserRole;
+  rating: number;
+  total_deliveries: number;
 }

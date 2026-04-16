@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Heart,
   MessageCircle,
@@ -99,12 +100,20 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
         {/* Header */}
         <div className="p-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-lg font-semibold border border-white/10">
+            <Link 
+              href={`/profile/${post.author_id}`}
+              className="h-12 w-12 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-lg font-semibold border border-white/10 hover:ring-2 hover:ring-electricBlue/50 transition-all"
+            >
               {authorName.charAt(0)}
-            </div>
+            </Link>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold">{authorName}</span>
+                <Link 
+                  href={`/profile/${post.author_id}`}
+                  className="font-semibold hover:text-electricBlue transition-colors"
+                >
+                  {authorName}
+                </Link>
                 {authorVerified && (
                   <ShieldCheck className="h-4 w-4 text-emerald" />
                 )}

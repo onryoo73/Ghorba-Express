@@ -19,6 +19,10 @@ export interface Database {
           rating: number;
           total_deliveries: number;
           verified: boolean;
+          avatar_url: string | null;
+          bio: string | null;
+          followers_count: number;
+          following_count: number;
           created_at: string;
           updated_at: string;
         };
@@ -31,6 +35,10 @@ export interface Database {
           rating?: number;
           total_deliveries?: number;
           verified?: boolean;
+          avatar_url?: string | null;
+          bio?: string | null;
+          followers_count?: number;
+          following_count?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -43,8 +51,32 @@ export interface Database {
           rating?: number;
           total_deliveries?: number;
           verified?: boolean;
+          avatar_url?: string | null;
+          bio?: string | null;
+          followers_count?: number;
+          following_count?: number;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      followers: {
+        Row: {
+          id: string;
+          follower_id: string;
+          following_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          follower_id: string;
+          following_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          follower_id?: string;
+          following_id?: string;
+          created_at?: string;
         };
       };
       posts: {
