@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { motion } from "framer-motion";
 import { PostComposer } from "@/components/post-composer";
 import { FeedPost } from "@/components/feed-post";

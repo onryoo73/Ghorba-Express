@@ -18,16 +18,36 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // Get offer details to calculate breakdown
+    const { data: offerData, error: fetchError } = await supabase
+      .from("post_offers")
+      .select("proposed_price_tnd")
+      .eq("id", offerId)
+      .single();
+
+    if (fetchError || !offerData) {
+      return NextResponse.json({ error: "Offer not found for payment" }, { status: 404 });
+    }
+
+    const amount = Number(offerData.proposed_price_tnd) || 0;
+    const rate = amount > 800 ? 2 : amount > 500 ? 3 : 5;
+    const fee = amount * (rate / 100);
+    const total = amount + fee;
+
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     console.log("[Mock Payment] Generated OTP:", otp, "for offer:", offerId);
 
-    // Update offer with OTP and payment status
+    // Update offer with OTP, payment status and financial data
     const { data: offer, error } = await supabase
       .from("post_offers")
       .update({
         payment_status: "authorized",
         payment_intent_id: paymentRef,
+        amount_tnd: amount,
+        platform_fee_tnd: fee,
+        total_paid_tnd: total,
+        platform_fee_rate: rate,
         status: "accepted",
         delivery_otp: otp,
         otp_generated_at: new Date().toISOString(),

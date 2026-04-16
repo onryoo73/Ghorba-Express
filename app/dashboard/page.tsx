@@ -46,6 +46,8 @@ interface RecentActivity {
   status?: string;
 }
 
+export const dynamic = "force-dynamic";
+
 export default function DashboardPage(): JSX.Element {
   const { isAuthenticated, role, effectiveRole, isAdmin, profile, user } = useAuthSession();
   const [stats, setStats] = useState<DashboardStats | null>(null);

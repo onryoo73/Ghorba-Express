@@ -45,7 +45,8 @@ interface ChatThread {
   unread_count?: number;
   // Payment fields
   payment_intent_id?: string;
-  payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "authorized" | "captured" | "failed" | "refunded";
+  payment_method?: "konnect" | "manual" | null;
+  payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "awaiting_verification" | "authorized" | "captured" | "failed" | "refunded";
   amount_tnd?: number; // Total buyer pays
   item_price_tnd?: number; // Item cost
   proposed_price_tnd?: number; // Traveler reward
@@ -81,6 +82,8 @@ const calculateTieredFee = (amount: number): { fee: number; rate: number; total:
   const fee = amount * (rate / 100);
   return { fee, rate, total: amount + fee };
 };
+
+export const dynamic = "force-dynamic";
 
 export default function MessagesPage(): JSX.Element {
   const { user, isAuthenticated } = useAuthSession();
@@ -853,6 +856,21 @@ export default function MessagesPage(): JSX.Element {
                         )}
                       </>
                     )}
+
+                    {/* STEP 3.5: Payment Awaiting Verification */}
+                    {selectedThread.payment_status === "awaiting_verification" && (
+                      <div className="bg-amber/10 border border-amber/30 rounded-lg p-4 space-y-2">
+                        <div className="flex items-center gap-2 text-amber">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-sm font-medium">Payment Verification Pending</span>
+                        </div>
+                        <p className="text-xs text-amber/80">
+                          {selectedThread.buyer_id === user?.id 
+                            ? "You've submitted manual payment proof. An admin will verify it shortly."
+                            : "Buyer has submitted payment proof. Once an admin verifies it, you can proceed with delivery."}
+                        </p>
+                      </div>
+                    )}
                     
                     {/* STEP 3: Payment Authorized - Delivery & Confirmation */}
                     {selectedThread.payment_status === "authorized" && (
@@ -1006,6 +1024,7 @@ export default function MessagesPage(): JSX.Element {
             platform_fee_rate: selectedThread.platform_fee_rate || null,
             total_paid_tnd: selectedThread.total_paid_tnd || null,
             payment_intent_id: selectedThread.payment_intent_id || null,
+            payment_method: selectedThread.payment_method || null,
             status: selectedThread.offer_status || "pending",
             payment_status: selectedThread.payment_status || null,
             delivery_status: selectedThread.delivery_status || null,

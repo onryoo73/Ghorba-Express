@@ -230,8 +230,9 @@ export interface Database {
           platform_fee_rate: number | null;
           total_paid_tnd: number | null;
           payment_intent_id: string | null;
+          payment_method: "konnect" | "manual" | null;
           status: "pending" | "accepted" | "declined" | "cancelled";
-          payment_status: "awaiting_acceptance" | "pending" | "awaiting_payment" | "authorized" | "captured" | "failed" | "refunded" | null;
+          payment_status: "awaiting_acceptance" | "pending" | "awaiting_payment" | "awaiting_verification" | "authorized" | "captured" | "failed" | "refunded" | null;
           delivery_status: "pending" | "in_transit" | "delivered" | "buyer_confirmed" | "completed" | null;
           delivery_otp: string | null;
           otp_generated_at: string | null;
@@ -261,8 +262,9 @@ export interface Database {
           platform_fee_rate?: number | null;
           total_paid_tnd?: number | null;
           payment_intent_id?: string | null;
+          payment_method?: "konnect" | "manual" | null;
           status?: "pending" | "accepted" | "declined" | "cancelled";
-          payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "authorized" | "captured" | "failed" | "refunded" | null;
+          payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "awaiting_verification" | "authorized" | "captured" | "failed" | "refunded" | null;
           delivery_status?: "pending" | "in_transit" | "delivered" | "buyer_confirmed" | "completed" | null;
           delivery_otp?: string | null;
           otp_generated_at?: string | null;
@@ -292,8 +294,9 @@ export interface Database {
           platform_fee_rate?: number | null;
           total_paid_tnd?: number | null;
           payment_intent_id?: string | null;
+          payment_method?: "konnect" | "manual" | null;
           status?: "pending" | "accepted" | "declined" | "cancelled";
-          payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "authorized" | "captured" | "failed" | "refunded" | null;
+          payment_status?: "awaiting_acceptance" | "pending" | "awaiting_payment" | "awaiting_verification" | "authorized" | "captured" | "failed" | "refunded" | null;
           delivery_status?: "pending" | "in_transit" | "delivered" | "buyer_confirmed" | "completed" | null;
           delivery_otp?: string | null;
           otp_generated_at?: string | null;
@@ -463,6 +466,44 @@ export interface Database {
           created_at?: string;
         };
       };
+      payment_proofs: {
+        Row: {
+          id: string;
+          offer_id: string | null;
+          order_id: string | null;
+          buyer_id: string;
+          provider: "d17" | "flouci" | "other";
+          image_url: string;
+          amount_tnd: number;
+          transaction_id: string | null;
+          verified: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          offer_id?: string | null;
+          order_id?: string | null;
+          buyer_id: string;
+          provider: "d17" | "flouci" | "other";
+          image_url: string;
+          amount_tnd: number;
+          transaction_id?: string | null;
+          verified?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          offer_id?: string | null;
+          order_id?: string | null;
+          buyer_id?: string;
+          provider?: "d17" | "flouci" | "other";
+          image_url?: string;
+          amount_tnd?: number;
+          transaction_id?: string | null;
+          verified?: boolean;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -493,3 +534,4 @@ export type Notification = Tables<"notifications">;
 export type Order = Tables<"orders">;
 export type ChatThread = Tables<"chat_threads">;
 export type ChatMessage = Tables<"chat_messages">;
+export type PaymentProof = Tables<"payment_proofs">;

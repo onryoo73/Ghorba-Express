@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   // Get offer and verify traveler
   const { data: offer } = await supabase
     .from("post_offers")
-    .select("id, buyer_id, traveler_id, delivery_otp, buyer_confirmed_receipt, amount_tnd, platform_fee_tnd")
+    .select("id, buyer_id, traveler_id, delivery_otp, buyer_confirmed_receipt, amount_tnd, platform_fee_tnd, proposed_price_tnd")
     .eq("id", offerId)
     .maybeSingle();
 
@@ -39,7 +39,9 @@ export async function POST(request: NextRequest) {
   }
 
   // Calculate traveler earnings
-  const travelerEarnings = (offer.amount_tnd || 0) - (offer.platform_fee_tnd || 0);
+  // Use proposed_price_tnd as fallback if amount_tnd is 0
+  const agreedAmount = Number(offer.amount_tnd || offer.proposed_price_tnd || 0);
+  const travelerEarnings = agreedAmount - (offer.platform_fee_tnd || 0);
 
   // Update offer - OTP verified, payment released
   const { data, error } = await supabase
@@ -60,6 +62,42 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // Update traveler wallet balance and log transaction
+  try {
+    // 1. Increment traveler's wallet balance
+    const { error: walletError } = await supabase.rpc('increment_wallet_balance', {
+      user_id: user.id,
+      amount: travelerEarnings
+    });
+
+    if (walletError) {
+      // If RPC fails, try manual update as fallback
+      const { data: profile } = await supabase.from('profiles').select('wallet_balance').eq('id', user.id).single();
+      const currentBalance = Number(profile?.wallet_balance || 0);
+      await supabase.from('profiles').update({ wallet_balance: currentBalance + travelerEarnings }).eq('id', user.id);
+    }
+
+    // 2. Log transaction
+    await supabase.from("wallet_transactions").insert({
+      user_id: user.id,
+      offer_id: offerId,
+      amount: travelerEarnings,
+      type: 'earning',
+      description: `Earnings for delivery: ${offer.id.slice(0, 8)}...`
+    });
+
+    // 3. Log payment history for buyer (as a payment)
+    await supabase.from("wallet_transactions").insert({
+      user_id: offer.buyer_id,
+      offer_id: offerId,
+      amount: offer.amount_tnd || 0,
+      type: 'payment',
+      description: `Payment for item delivery: ${offer.id.slice(0, 8)}...`
+    });
+  } catch (err) {
+    console.error("Wallet update error:", err);
+  }
 
   // Create payment record
   await supabase.from("payments").insert({

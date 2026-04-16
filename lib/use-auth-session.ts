@@ -72,14 +72,23 @@ export function useAuthSession(): {
     let isMounted = true;
 
     const initializeSession = async () => {
-      if (!supabase) {
+      if (!supabase || typeof window === "undefined") {
         setIsReady(true);
         return;
       }
 
-      const { data } = await supabase.auth.getSession();
+      // Check for current session explicitly
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Session init error:", error);
+        setIsReady(true);
+        return;
+      }
+
       if (isMounted) {
         const currentUser = data.session?.user ?? null;
+        console.log("Session init user:", currentUser?.email);
         setUser(currentUser);
         setIsAuthenticated(Boolean(currentUser));
         if (currentUser) {
