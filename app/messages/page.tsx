@@ -28,7 +28,8 @@ import { useAuthSession } from "@/lib/use-auth-session";
 import { supabase } from "@/lib/supabase/client";
 import type { Post } from "@/lib/supabase/database.types";
 import { PaymentModal } from "@/components/payment-modal";
-import { DeliveryConfirmation } from "@/components/delivery-confirmation";
+import { DeliveryOTP } from "@/components/delivery-otp";
+import type { PostOffer } from "@/lib/supabase/database.types";
 
 interface ChatThread {
   id: string;
@@ -51,8 +52,14 @@ interface ChatThread {
   platform_fee_tnd?: number; // Platform fee
   platform_fee_rate?: number; // Fee percentage
   total_paid_tnd?: number; // Total paid
-  delivery_status?: "pending" | "in_transit" | "delivered" | "confirmed";
+  delivery_status?: "pending" | "in_transit" | "delivered" | "buyer_confirmed" | "completed";
   offer_status?: "pending" | "accepted" | "declined" | "cancelled";
+  // OTP fields
+  delivery_otp?: string | null;
+  traveler_confirmed_delivery?: boolean | null;
+  buyer_confirmed_receipt?: boolean | null;
+  otp_verified?: boolean | null;
+  payment_released?: boolean | null;
 }
 
 interface ChatMessage {
@@ -87,7 +94,7 @@ export default function MessagesPage(): JSX.Element {
   // Payment & Delivery modals
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
-  const [deliveryMode, setDeliveryMode] = useState<"generate" | "scan">("generate");
+  const [deliveryMode, setDeliveryMode] = useState<"buyer" | "traveler">("buyer");
   
   // Agreed amount input (buyer enters what they agreed on)
   const [agreedAmount, setAgreedAmount] = useState<string>("");
@@ -126,7 +133,13 @@ export default function MessagesPage(): JSX.Element {
           platform_fee_rate: t.offer?.platform_fee_rate || 5,
           total_paid_tnd: t.offer?.total_paid_tnd,
           delivery_status: t.delivery_status,
-          offer_status: t.offer?.status
+          offer_status: t.offer?.status,
+          // OTP fields
+          delivery_otp: t.offer?.delivery_otp,
+          traveler_confirmed_delivery: t.offer?.traveler_confirmed_delivery,
+          buyer_confirmed_receipt: t.offer?.buyer_confirmed_receipt,
+          otp_verified: t.offer?.otp_verified,
+          payment_released: t.offer?.payment_released
         }));
         setThreads(formatted);
       }
@@ -754,73 +767,34 @@ export default function MessagesPage(): JSX.Element {
                         <div className="flex items-center gap-2">
                           <ShieldCheck className="h-4 w-4 text-emerald" />
                           <span className="text-sm text-emerald">
-                            {selectedThread.delivery_status === "confirmed" 
+                            {selectedThread.delivery_status === "completed" 
                               ? "Delivery confirmed & paid" 
                               : "Payment secured in escrow - waiting for delivery"}
                           </span>
                         </div>
-                        {selectedThread.delivery_status !== "confirmed" && selectedThread.buyer_id === user?.id && (
+                        {selectedThread.delivery_status !== "completed" && selectedThread.buyer_id === user?.id && (
                           <button
-                            onClick={async () => {
-                              if (!supabase || !selectedThread.offer_id || !user?.id) {
-                                console.error("Missing required data", { 
-                                  supabase: !!supabase, 
-                                  offerId: selectedThread.offer_id, 
-                                  userId: user?.id 
-                                });
-                                return;
-                              }
-                              
-                              try {
-                                const { error: updateError } = await supabase
-                                  .from("post_offers")
-                                  .update({ 
-                                    payment_status: "captured",
-                                    delivery_status: "confirmed",
-                                    completed_at: new Date().toISOString()
-                                  })
-                                  .eq("id", selectedThread.offer_id);
-                                
-                                if (updateError) {
-                                  console.error("Failed to update offer:", updateError);
-                                  alert("Failed to confirm: " + updateError.message);
-                                  return;
-                                }
-                                
-                                await supabase.from("notifications").insert({
-                                  recipient_id: selectedThread.traveler_id,
-                                  sender_id: user.id,
-                                  type: "escrow_update",
-                                  title: "Payment released!",
-                                  message: "Buyer confirmed receipt. Funds released to you."
-                                });
-                                
-                                setThreads(prev => prev.map(t => 
-                                  t.id === selectedThread.id 
-                                    ? { ...t, payment_status: "captured", delivery_status: "confirmed" }
-                                    : t
-                                ));
-                                setSelectedThread(prev => prev ? {
-                                  ...prev, 
-                                  payment_status: "captured", 
-                                  delivery_status: "confirmed" 
-                                } : null);
-                              } catch (err) {
-                                console.error("Error confirming receipt:", err);
-                                alert("Error confirming receipt. Check console.");
-                              }
+                            onClick={() => {
+                              setDeliveryMode("buyer");
+                              setShowDeliveryModal(true);
                             }}
                             className="flex items-center gap-2 px-4 py-2 bg-emerald rounded-lg text-sm font-medium hover:bg-emerald/80 transition-colors"
                           >
                             <CheckCircle2 className="h-4 w-4" />
-                            Mark as Received
+                            {selectedThread.traveler_confirmed_delivery ? "Confirm Receipt" : "View OTP"}
                           </button>
                         )}
-                        {selectedThread.delivery_status !== "confirmed" && selectedThread.traveler_id === user?.id && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-amber" />
-                            <span className="text-sm text-amber">Deliver item and wait for confirmation</span>
-                          </div>
+                        {selectedThread.delivery_status !== "completed" && selectedThread.traveler_id === user?.id && (
+                          <button
+                            onClick={() => {
+                              setDeliveryMode("traveler");
+                              setShowDeliveryModal(true);
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-electricBlue rounded-lg text-sm font-medium hover:bg-electricBlue/80 transition-colors"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            {selectedThread.buyer_confirmed_receipt ? "Enter OTP" : "Confirm Delivery"}
+                          </button>
                         )}
                       </div>
                     )}
@@ -920,28 +894,83 @@ export default function MessagesPage(): JSX.Element {
         />
       )}
       
-      {/* Delivery Confirmation Modal */}
+      {/* Delivery OTP Modal */}
       {selectedThread && (
-        <DeliveryConfirmation
+        <DeliveryOTP
           isOpen={showDeliveryModal}
           onClose={() => setShowDeliveryModal(false)}
-          offerId={selectedThread.offer_id || ""}
-          paymentIntentId={selectedThread.payment_intent_id || ""}
-          buyerId={selectedThread.buyer_id}
-          travelerId={selectedThread.traveler_id}
-          itemDescription={selectedThread.post?.content?.slice(0, 50) || "Delivery"}
+          offer={{
+            id: selectedThread.offer_id || "",
+            post_id: selectedThread.post_id,
+            offerer_id: "",
+            buyer_id: selectedThread.buyer_id,
+            traveler_id: selectedThread.traveler_id,
+            message: null,
+            proposed_price_tnd: selectedThread.proposed_price_tnd || null,
+            item_price_tnd: selectedThread.item_price_tnd || null,
+            amount_tnd: selectedThread.amount_tnd || null,
+            platform_fee_tnd: selectedThread.platform_fee_tnd || null,
+            platform_fee_rate: selectedThread.platform_fee_rate || null,
+            total_paid_tnd: selectedThread.total_paid_tnd || null,
+            payment_intent_id: selectedThread.payment_intent_id || null,
+            status: selectedThread.offer_status || "pending",
+            payment_status: selectedThread.payment_status || null,
+            delivery_status: selectedThread.delivery_status || null,
+            delivery_otp: selectedThread.delivery_otp || null,
+            otp_generated_at: null,
+            traveler_confirmed_delivery: selectedThread.traveler_confirmed_delivery || null,
+            traveler_confirmed_at: null,
+            buyer_confirmed_receipt: selectedThread.buyer_confirmed_receipt || null,
+            buyer_confirmed_at: null,
+            otp_verified: selectedThread.otp_verified || null,
+            otp_verified_at: null,
+            payment_released: selectedThread.payment_released || null,
+            payment_released_at: null,
+            created_at: selectedThread.created_at,
+            updated_at: selectedThread.created_at,
+            completed_at: null
+          }}
           mode={deliveryMode}
+          userId={user?.id || ""}
+          onStageChange={(stage) => {
+            // Update local state when delivery stages change
+            if (stage === "traveler_confirmed") {
+              setThreads(prev => prev.map(t => 
+                t.id === selectedThread.id 
+                  ? { ...t, traveler_confirmed_delivery: true, delivery_status: "delivered" }
+                  : t
+              ));
+              setSelectedThread(prev => prev ? {
+                ...prev, 
+                traveler_confirmed_delivery: true,
+                delivery_status: "delivered"
+              } : null);
+            } else if (stage === "buyer_confirmed") {
+              setThreads(prev => prev.map(t => 
+                t.id === selectedThread.id 
+                  ? { ...t, buyer_confirmed_receipt: true, delivery_status: "buyer_confirmed" }
+                  : t
+              ));
+              setSelectedThread(prev => prev ? {
+                ...prev, 
+                buyer_confirmed_receipt: true,
+                delivery_status: "buyer_confirmed"
+              } : null);
+            }
+          }}
           onConfirmed={() => {
-            // Update local state
+            // Update local state - full completion
             setThreads(prev => prev.map(t => 
               t.id === selectedThread.id 
-                ? { ...t, payment_status: "captured", delivery_status: "confirmed" }
+                ? { ...t, payment_status: "captured", delivery_status: "completed", payment_released: true, otp_verified: true }
                 : t
             ));
             setSelectedThread(prev => prev ? {
               ...prev, 
               payment_status: "captured", 
-              delivery_status: "confirmed" 
+              delivery_status: "completed",
+              payment_released: true,
+              otp_verified: true
             } : null);
           }}
         />

@@ -24,13 +24,19 @@ export async function POST(request: Request) {
     );
 
     if (status === "completed") {
-      // Payment successful - update offer
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Payment successful - update offer with OTP
       await supabase
         .from("post_offers")
         .update({ 
           payment_status: "authorized",
           payment_intent_id: paymentRef,
           status: "accepted",
+          delivery_otp: otp,
+          otp_generated_at: new Date().toISOString(),
+          delivery_status: "in_transit",
           updated_at: new Date().toISOString()
         })
         .eq("id", orderId);
@@ -48,7 +54,7 @@ export async function POST(request: Request) {
           sender_id: offer.buyer_id,
           type: "escrow_update",
           title: "Payment received!",
-          message: "Buyer has paid. Deliver the item and scan QR to get paid."
+          message: "Buyer has paid and funds are in escrow. Deliver the item and ask buyer for the OTP to release payment."
         });
       }
     }

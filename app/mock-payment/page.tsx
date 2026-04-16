@@ -16,11 +16,24 @@ export default function MockPaymentPage(): JSX.Element {
   const ref = searchParams.get("ref");
   const amount = searchParams.get("amount");
   const desc = searchParams.get("desc");
+  const offerId = searchParams.get("offerId");
 
   const handleSuccess = async () => {
     setIsProcessing(true);
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Call API to complete mock payment and generate OTP
+    if (ref && offerId) {
+      try {
+        await fetch("/api/mock-payment/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentRef: ref, offerId })
+        });
+      } catch (err) {
+        console.error("Failed to complete mock payment:", err);
+      }
+    }
+    
     setResult("success");
     setIsProcessing(false);
   };

@@ -26,7 +26,7 @@ export async function createMockPayment(
   const paymentRef = `MOCK_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   
   // Return mock payment URL (opens a local simulation page)
-  const payUrl = `/mock-payment?ref=${paymentRef}&amount=${data.amount}&desc=${encodeURIComponent(data.itemDescription)}`;
+  const payUrl = `/mock-payment?ref=${paymentRef}&amount=${data.amount}&desc=${encodeURIComponent(data.itemDescription)}&offerId=${data.offerId}`;
   
   return {
     payUrl,
