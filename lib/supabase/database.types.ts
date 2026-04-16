@@ -420,25 +420,40 @@ export interface Database {
       chat_threads: {
         Row: {
           id: string;
-          order_id: string;
+          order_id: string | null;
+          post_id: string | null;
+          trip_id: string | null;
+          offer_id: string | null;
           buyer_id: string;
           traveler_id: string;
+          payment_intent_id: string | null;
+          delivery_status: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          order_id: string;
+          order_id?: string | null;
+          post_id?: string | null;
+          trip_id?: string | null;
+          offer_id?: string | null;
           buyer_id: string;
           traveler_id: string;
+          payment_intent_id?: string | null;
+          delivery_status?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          order_id?: string;
+          order_id?: string | null;
+          post_id?: string | null;
+          trip_id?: string | null;
+          offer_id?: string | null;
           buyer_id?: string;
           traveler_id?: string;
+          payment_intent_id?: string | null;
+          delivery_status?: string | null;
           created_at?: string;
           updated_at?: string;
         };

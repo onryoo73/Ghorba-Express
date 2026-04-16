@@ -7,9 +7,8 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { FeedPost } from "@/components/feed-post";
-import { PostComposer } from "@/components/post-composer";
-import { usePosts } from "@/lib/hooks/use-posts";
+import { TripCard } from "@/components/trip-card";
+import { useTrips } from "@/lib/hooks/use-trips";
 
 const popularRoutes = [
   { from: "Paris", to: "Tunis", trips: 12 },
@@ -24,9 +23,8 @@ export default function TripsPage(): JSX.Element {
   const [searchTo, setSearchTo] = useState("");
   const [searchDate, setSearchDate] = useState("");
 
-  const { posts, loading, error, refresh } = usePosts({ 
-    type: "trip", 
-    status: "active", 
+  const { trips, loading, error, refresh } = useTrips({ 
+    status: "open",
     limit: 20,
     origin: searchFrom || undefined,
     destination: searchTo || undefined
@@ -96,25 +94,32 @@ export default function TripsPage(): JSX.Element {
             </div>
           </Card>
 
-          {/* Composer */}
-          <PostComposer onPostCreated={refresh} />
-
+          {/* No composer here - trips are created via traveler dashboard */}
+          
           {/* Feed */}
           {loading && (
             <div className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-electricBlue" />
             </div>
           )}
-          
+                    
           {error && (
             <div className="text-center py-8 text-rose-300">
               Failed to load trips. Please try again.
             </div>
           )}
+                    
+          {!loading && trips.length === 0 && (
+            <div className="text-center py-8 text-muted">
+              <Plane className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No trips available at the moment.</p>
+              <p className="text-sm mt-2">Check back later or create a trip if you're traveling!</p>
+            </div>
+          )}
           
           <div className="space-y-4">
-            {posts.map((post) => (
-              <FeedPost key={post.id} post={post} />
+            {trips.map((trip) => (
+              <TripCard key={trip.id} trip={trip} />
             ))}
           </div>
 
