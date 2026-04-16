@@ -61,10 +61,10 @@ export function usePosts(options?: {
     }
   }, []); // No deps - uses ref
 
-  // Initial fetch only
+  // Initial fetch when options change
   useEffect(() => {
     fetchPosts();
-  }, []); // Empty deps - only on mount
+  }, [fetchPosts, options?.origin, options?.destination, options?.type, options?.status]); // Re-fetch when filters change
 
   // Subscribe to real-time changes - completely separate from fetch
   useEffect(() => {

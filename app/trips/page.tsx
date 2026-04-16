@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plane, MapPin, CalendarDays, Package, Search, Filter, TrendingUp, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -19,7 +20,22 @@ const popularRoutes = [
 ];
 
 export default function TripsPage(): JSX.Element {
-  const { posts, loading, error, refresh } = usePosts({ type: "trip", status: "active", limit: 20 });
+  const [searchFrom, setSearchFrom] = useState("");
+  const [searchTo, setSearchTo] = useState("");
+  const [searchDate, setSearchDate] = useState("");
+
+  const { posts, loading, error, refresh } = usePosts({ 
+    type: "trip", 
+    status: "active", 
+    limit: 20,
+    origin: searchFrom || undefined,
+    destination: searchTo || undefined
+  });
+
+  const handleSearch = () => {
+    refresh();
+  };
+
   return (
     <AppShell>
       {/* Header */}
@@ -50,6 +66,8 @@ export default function TripsPage(): JSX.Element {
                 <MapPin className="h-4 w-4 text-electricBlue" />
                 <Input
                   placeholder="From (city)"
+                  value={searchFrom}
+                  onChange={(e) => setSearchFrom(e.target.value)}
                   className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                 />
               </div>
@@ -57,6 +75,8 @@ export default function TripsPage(): JSX.Element {
                 <MapPin className="h-4 w-4 text-emerald" />
                 <Input
                   placeholder="To (city)"
+                  value={searchTo}
+                  onChange={(e) => setSearchTo(e.target.value)}
                   className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                 />
               </div>
@@ -64,10 +84,12 @@ export default function TripsPage(): JSX.Element {
                 <CalendarDays className="h-4 w-4 text-yellow-300" />
                 <Input
                   type="date"
+                  value={searchDate}
+                  onChange={(e) => setSearchDate(e.target.value)}
                   className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                 />
               </div>
-              <Button className="gap-2">
+              <Button onClick={handleSearch} className="gap-2">
                 <Search className="h-4 w-4" />
                 Search
               </Button>
