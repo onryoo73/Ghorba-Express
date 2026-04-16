@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CousinExpress | P2P Crowdsourced Shipping",
+  title: "Ghorba Express | P2P Crowdsourced Shipping",
   description: "Modern escrow-first crowdsourced shipping for Tunisia and beyond."
 };
 

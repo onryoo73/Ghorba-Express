@@ -1,4 +1,4 @@
-# Supabase Setup (CousinExpress MVP)
+# Supabase Setup (Ghorba Express MVP)
 
 ## 1) Environment variables
 
@@ -15,7 +15,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 Open your Supabase project SQL Editor and run:
 
-- `supabase/migrations/202604131405_init_cousinexpress.sql`
+- `supabase/migrations/202604131405_init_Ghorba Express.sql`
 - `supabase/migrations/202604132000_backend_ops.sql`
 - `supabase/migrations/202604132130_chat.sql`
 

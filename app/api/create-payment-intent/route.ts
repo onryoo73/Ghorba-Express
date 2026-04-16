@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         token: "TND",
         amount: amountInMillimes,
         type: "immediate",
-        description: itemDescription || "CousinExpress delivery payment",
+        description: itemDescription || "Ghorba Express delivery payment",
         acceptedPaymentMethods: ["bank_card", "e-DINAR", "wallet"],
         lifespan: 60,
         checkoutForm: true,
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
         offerId,
         buyerId,
         travelerId,
-        itemDescription: itemDescription || "CousinExpress delivery"
+        itemDescription: itemDescription || "Ghorba Express delivery"
       });
 
       return NextResponse.json({ 

@@ -68,7 +68,7 @@ export function DashboardSidebar({
       <div className="flex h-full flex-col p-3">
         <div className={cn("mb-4 flex items-center", isOpen ? "justify-between" : "justify-center")}>
           {isOpen && (
-            <p className="text-sm font-semibold text-foreground/90">CousinExpress</p>
+            <p className="text-sm font-semibold text-foreground/90">Ghorba Express</p>
           )}
           <Button variant="ghost" className="h-9 w-9 p-0" onClick={onToggle}>
             {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}

@@ -217,7 +217,7 @@ export default function DashboardPage(): JSX.Element {
       <AppShell>
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <Card className="p-8 text-center">
-            <h1 className="text-2xl font-semibold mb-4">Welcome to CousinExpress</h1>
+            <h1 className="text-2xl font-semibold mb-4">Welcome to Ghorba Express</h1>
             <p className="text-muted mb-6">Sign in to access your dashboard</p>
             <Link href="/auth">
               <Button className="bg-electricBlue">Sign In</Button>

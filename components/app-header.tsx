@@ -43,7 +43,7 @@ export function AppHeader({
             <PackageCheck className="h-5 w-5 text-electricBlue" />
           </div>
           <div>
-            <p className="text-sm font-semibold">CousinExpress</p>
+            <p className="text-sm font-semibold">Ghorba Express</p>
             <p className="text-xs text-muted">Crowdsourced shipping</p>
           </div>
         </div>

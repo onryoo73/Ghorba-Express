@@ -1,4 +1,4 @@
--- CousinExpress MVP schema
+-- Ghorba Express MVP schema
 -- Run this in Supabase SQL editor or via supabase migration tooling.
 
 create extension if not exists "pgcrypto";
