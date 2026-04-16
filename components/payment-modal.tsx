@@ -356,7 +356,7 @@ export function PaymentModal({
                       ) : error ? (
                         <div className="bg-rose-400/10 border border-rose-400/20 rounded-lg p-3 text-center">
                           <p className="text-sm text-rose-300 mb-2">{error}</p>
-                          <Button onClick={createPayment} size="sm" variant="secondary">Try Again</Button>
+                          <Button onClick={createPayment} variant="secondary">Try Again</Button>
                         </div>
                       ) : paymentUrl ? (
                         <div className="space-y-4">
@@ -403,7 +403,9 @@ export function PaymentModal({
                             manualProvider === "d17" ? "bg-amber/10 border-amber/50" : "bg-white/5 border-white/10 hover:bg-white/10"
                           }`}
                         >
-                          <Smartphone className={`h-5 w-5 ${manualProvider === "d17" ? "text-amber" : "text-muted"}`} />
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-white mb-1 flex items-center justify-center">
+                            <img src="/d17.png" alt="D17" className="w-full h-full object-contain" />
+                          </div>
                           <span className="text-xs font-medium">D17</span>
                           <span className="text-[10px] text-muted">22 333 444</span>
                         </button>
@@ -413,7 +415,9 @@ export function PaymentModal({
                             manualProvider === "flouci" ? "bg-electricBlue/10 border-electricBlue/50" : "bg-white/5 border-white/10 hover:bg-white/10"
                           }`}
                         >
-                          <Smartphone className={`h-5 w-5 ${manualProvider === "flouci" ? "text-electricBlue" : "text-muted"}`} />
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-white mb-1 flex items-center justify-center p-1">
+                            <img src="/flouci.png" alt="Flouci" className="w-full h-full object-contain" />
+                          </div>
                           <span className="text-xs font-medium">Flouci</span>
                           <span className="text-[10px] text-muted">ghorba-express</span>
                         </button>

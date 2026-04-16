@@ -27,13 +27,23 @@ export function AppHeader({
   onSignOut
 }: AppHeaderProps): JSX.Element {
   const pathname = usePathname();
-  const links: { href: Route; label: string }[] = [
-    { href: "/", label: "Home" },
-    { href: "/trips", label: "Trips" },
-    { href: "/wallet", label: "Wallet" },
-    { href: "/orders", label: "Orders" },
-    { href: "/dashboard", label: "Dashboard" }
-  ];
+  let links: { href: string; label: string }[] = [];
+
+  if (isAuthenticated && isAdmin) {
+    links = [
+      { href: "/dashboard/admin", label: "Admin Panel" },
+      { href: "/dashboard", label: "Hub" },
+      { href: "/profile", label: "Profile" }
+    ];
+  } else {
+    links = [
+      { href: "/", label: "Home" },
+      { href: "/trips", label: "Trips" },
+      { href: "/wallet", label: "Wallet" },
+      { href: "/orders", label: "Orders" },
+      { href: "/dashboard", label: "Dashboard" }
+    ];
+  }
 
   return (
     <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-white/15 bg-[#0f1726]/80 px-4 py-3 shadow-glow backdrop-blur-xl">
@@ -44,7 +54,7 @@ export function AppHeader({
           </div>
           <div>
             <p className="text-sm font-semibold">Ghorba Express</p>
-            <p className="text-xs text-muted">Crowdsourced shipping</p>
+            <p className="text-xs text-muted">{isAdmin ? "Administration" : "Crowdsourced shipping"}</p>
           </div>
         </div>
 
@@ -54,7 +64,7 @@ export function AppHeader({
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href as any}
                 className={cn(
                   "rounded-lg px-2.5 py-1.5 text-xs transition",
                   active ? "bg-electricBlue text-white" : "text-muted hover:text-foreground"

@@ -38,24 +38,34 @@ export function DashboardSidebar({
 }: DashboardSidebarProps): JSX.Element {
   const pathname = usePathname();
 
-  const links: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/dashboard", label: "Hub", icon: LayoutDashboard }
-  ];
+  let links: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [];
 
-  if (isAuthenticated && (effectiveRole === "buyer" || role === "buyer")) {
-    links.push({ href: "/dashboard/buyer", label: "Buyer", icon: User });
-  }
-  if (isAuthenticated && (effectiveRole === "traveler" || role === "traveler")) {
-    links.push({ href: "/dashboard/traveler", label: "Traveler", icon: Truck });
-  }
   if (isAuthenticated && isAdmin) {
-    links.push({ href: "/dashboard/admin", label: "Admin", icon: Shield });
-  }
-  links.push({ href: "/orders", label: "Orders", icon: Package });
-  if (isAuthenticated) {
-    links.push({ href: "/messages", label: "Messages", icon: MessageSquare });
-    links.push({ href: "/profile", label: "Profile", icon: Settings });
+    // Admins ONLY see administration links
+    links = [
+      { href: "/dashboard/admin", label: "Admin Dashboard", icon: Shield },
+      { href: "/dashboard", label: "Hub", icon: LayoutDashboard },
+      { href: "/profile", label: "Admin Profile", icon: Settings }
+    ];
+  } else {
+    // Regular users see everything else
+    links = [
+      { href: "/", label: "Home", icon: Home },
+      { href: "/dashboard", label: "Hub", icon: LayoutDashboard }
+    ];
+
+    if (isAuthenticated && (effectiveRole === "buyer" || role === "buyer")) {
+      links.push({ href: "/dashboard/buyer", label: "Buyer", icon: User });
+    }
+    if (isAuthenticated && (effectiveRole === "traveler" || role === "traveler")) {
+      links.push({ href: "/dashboard/traveler", label: "Traveler", icon: Truck });
+    }
+    
+    links.push({ href: "/orders", label: "Orders", icon: Package });
+    if (isAuthenticated) {
+      links.push({ href: "/messages", label: "Messages", icon: MessageSquare });
+      links.push({ href: "/profile", label: "Profile", icon: Settings });
+    }
   }
 
   return (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, PackageSearch, Wallet, ClipboardList, MessageSquare, User } from "lucide-react";
+import { Home, LayoutDashboard, PackageSearch, Wallet, ClipboardList, MessageSquare, User, Shield } from "lucide-react";
 import { useAuthSession } from "@/lib/use-auth-session";
 import { useUnreadMessageCount } from "@/lib/hooks/use-unread-count";
 import { cn } from "@/lib/utils";
@@ -16,18 +16,31 @@ const items: { href: string; label: string; icon: React.ComponentType<{ classNam
   { href: "/dashboard", label: "Dash", icon: LayoutDashboard }
 ];
 
+const adminItems: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { href: "/dashboard/admin", label: "Admin", icon: Shield },
+  { href: "/dashboard", label: "Hub", icon: LayoutDashboard },
+  { href: "/profile", label: "Profile", icon: User }
+];
+
 export function MobileNav({ isAuthenticated }: { isAuthenticated: boolean }): JSX.Element {
   const pathname = usePathname();
-  const { user } = useAuthSession();
+  const { user, isAdmin } = useAuthSession();
   const unreadCount = useUnreadMessageCount(user?.id);
   
-  const navItems = isAuthenticated ? items : [...items.slice(0, 4), { href: "/auth", label: "Auth", icon: LayoutDashboard }];
-  // Only show messages if authenticated
-  const filteredItems = isAuthenticated ? items : items.filter(i => i.href !== "/messages");
+  let filteredItems = [];
+  
+  if (isAuthenticated && isAdmin) {
+    filteredItems = adminItems;
+  } else {
+    filteredItems = isAuthenticated ? items : items.filter(i => i.href !== "/messages" && i.href !== "/profile" && i.href !== "/dashboard");
+    if (!isAuthenticated) {
+      filteredItems.push({ href: "/auth", label: "Auth", icon: LayoutDashboard });
+    }
+  }
 
   return (
     <nav className="fixed inset-x-0 bottom-3 z-40 mx-auto w-[calc(100%-1.25rem)] max-w-md rounded-2xl border border-white/15 bg-black/40 p-1.5 backdrop-blur-xl lg:hidden">
-      <div className="grid grid-cols-5 gap-1">
+      <div className={cn("grid gap-1", filteredItems.length === 3 ? "grid-cols-3" : "grid-cols-5")}>
         {filteredItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;

@@ -1,191 +1,254 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ShoppingBag, MapPin, Package, Search, TrendingUp, ShieldCheck, Plus, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  ShoppingBag, 
+  MapPin, 
+  Package, 
+  Clock, 
+  CheckCircle2, 
+  ArrowRight, 
+  Loader2, 
+  AlertCircle,
+  Truck,
+  ShieldCheck,
+  DollarSign
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { FeedPost } from "@/components/feed-post";
-import { PostComposer } from "@/components/post-composer";
-import { usePosts } from "@/lib/hooks/use-posts";
+import { Button } from "@/components/ui/button";
+import { useAuthSession } from "@/lib/use-auth-session";
+import { supabase } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
-const popularNeeds = [
-  { tag: "Electronics", count: 45 },
-  { tag: "Cosmetics", count: 32 },
-  { tag: "Fashion", count: 28 },
-  { tag: "Books", count: 15 },
-  { tag: "Toys", count: 12 },
-  { tag: "Medicine", count: 8 }
-];
+interface OrderItem {
+  id: string;
+  post_id: string;
+  buyer_id: string;
+  traveler_id: string;
+  proposed_price_tnd: number;
+  total_paid_tnd: number;
+  status: string;
+  payment_status: string;
+  delivery_status: string;
+  created_at: string;
+  post: {
+    content: string;
+    origin: string;
+    destination: string;
+  };
+  buyer: { full_name: string };
+  traveler: { full_name: string };
+}
 
-const timeline = ["Deposited", "Funds Locked", "In Transit", "Delivered", "Released"];
+export const dynamic = "force-dynamic";
 
 export default function OrdersPage(): JSX.Element {
-  const { posts, loading, error, refresh } = usePosts({ type: "request", status: "active", limit: 20 });
+  const { user, isAuthenticated } = useAuthSession();
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchOrders = async () => {
+    if (!user || !supabase) return;
+    
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("post_offers")
+        .select(`
+          *,
+          post:posts(content, origin, destination),
+          buyer:profiles!buyer_id(full_name),
+          traveler:profiles!traveler_id(full_name)
+        `)
+        .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`)
+        .order("created_at", { ascending: false });
+
+      if (fetchError) throw fetchError;
+      setOrders(data || []);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("Failed to load your orders.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchOrders();
+      
+      // Real-time updates for orders
+      const channel = supabase
+        ?.channel('orders_updates')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'post_offers'
+        }, () => fetchOrders())
+        .subscribe();
+        
+      return () => {
+        channel?.unsubscribe();
+      };
+    }
+  }, [isAuthenticated, user?.id]);
+
+  const getStatusColor = (status: string, paymentStatus: string, deliveryStatus: string) => {
+    if (deliveryStatus === "completed") return "text-emerald bg-emerald/10 border-emerald/20";
+    if (paymentStatus === "awaiting_verification") return "text-amber bg-amber/10 border-amber/20";
+    if (paymentStatus === "authorized") return "text-electricBlue bg-electricBlue/10 border-electricBlue/20";
+    if (status === "declined" || status === "cancelled") return "text-rose-400 bg-rose-400/10 border-rose-400/20";
+    return "text-muted bg-white/5 border-white/10";
+  };
+
+  const getStatusLabel = (status: string, paymentStatus: string, deliveryStatus: string) => {
+    if (deliveryStatus === "completed") return "Completed";
+    if (paymentStatus === "awaiting_verification") return "Verifying Payment";
+    if (paymentStatus === "authorized") return "In Transit";
+    if (paymentStatus === "awaiting_payment") return "Awaiting Payment";
+    if (status === "accepted") return "Accepted";
+    if (status === "pending") return "Offer Pending";
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
+          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+            <ShieldCheck className="w-8 h-8 text-muted" />
+          </div>
+          <h1 className="text-xl font-semibold mb-2">Login to see your orders</h1>
+          <p className="text-muted text-sm max-w-xs mb-6">
+            Track your deliveries, payments, and history in one place.
+          </p>
+          <Link href="/auth">
+            <Button>Log in / Sign up</Button>
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
-      {/* Header */}
-      <motion.section
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mb-6"
-      >
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-xl bg-rose-400/20">
-            <ShoppingBag className="h-6 w-6 text-rose-300" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold">Buyer Requests</h1>
-            <p className="text-sm text-muted">Browse what people need or post your own request</p>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-electricBlue/20">
+              <ShoppingBag className="h-6 w-6 text-electricBlue" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold">My Orders</h1>
+              <p className="text-sm text-muted">Manage your active transactions and history</p>
+            </div>
           </div>
         </div>
-      </motion.section>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* Main Feed */}
-        <div className="lg:col-span-8 space-y-4">
-          {/* Search */}
-          <Card className="p-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
-                <Search className="h-4 w-4 text-muted" />
-                <Input
-                  placeholder="Search requests..."
-                  className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 min-w-[140px]">
-                <MapPin className="h-4 w-4 text-electricBlue" />
-                <Input
-                  placeholder="From"
-                  className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 min-w-[140px]">
-                <MapPin className="h-4 w-4 text-emerald" />
-                <Input
-                  placeholder="To"
-                  className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
-                />
-              </div>
-              <Button className="gap-2">
-                <Search className="h-4 w-4" />
-                Search
-              </Button>
-            </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-electricBlue mb-4" />
+            <p className="text-sm text-muted">Loading your orders...</p>
+          </div>
+        ) : error ? (
+          <Card className="p-8 border-rose-400/20 bg-rose-400/5 text-center">
+            <AlertCircle className="h-8 w-8 text-rose-400 mx-auto mb-3" />
+            <p className="text-rose-300">{error}</p>
+            <Button variant="secondary" onClick={fetchOrders} className="mt-4">Try Again</Button>
           </Card>
-
-          {/* Composer */}
-          <PostComposer onPostCreated={refresh} />
-
-          {/* Feed */}
-          {loading && (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-electricBlue" />
+        ) : orders.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-muted" />
             </div>
-          )}
-          
-          {error && (
-            <div className="text-center py-8 text-rose-300">
-              Failed to load requests. Please try again.
-            </div>
-          )}
-          
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <FeedPost key={post.id} post={post} />
+            <h3 className="text-lg font-medium mb-1">No orders yet</h3>
+            <p className="text-sm text-muted mb-6">Browse requests or trips to start shipping.</p>
+            <Link href="/">
+              <Button variant="secondary">Go to Feed</Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {orders.map((order) => (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card className="p-5 hover:border-white/20 transition-colors group">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border",
+                          getStatusColor(order.status, order.payment_status, order.delivery_status)
+                        )}>
+                          {getStatusLabel(order.status, order.payment_status, order.delivery_status)}
+                        </span>
+                        <span className="text-[10px] text-muted">#{order.id.slice(0, 8)}</span>
+                      </div>
+
+                      <div>
+                        <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-electricBlue transition-colors">
+                          {order.post?.content || "Delivery Service"}
+                        </h3>
+                        <div className="flex items-center gap-4 mt-1 text-xs text-muted">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3 text-electricBlue" />
+                            {order.post?.origin} → {order.post?.destination}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(order.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6 pt-1">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-muted uppercase font-medium">Role</span>
+                          <span className="text-sm font-medium flex items-center gap-1.5">
+                            {order.buyer_id === user?.id ? (
+                              <><ShoppingBag className="h-3.5 w-3.5 text-rose-300" /> Buyer</>
+                            ) : (
+                              <><Truck className="h-3.5 w-3.5 text-emerald" /> Traveler</>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-muted uppercase font-medium">Other Party</span>
+                          <span className="text-sm font-medium">
+                            {order.buyer_id === user?.id ? order.traveler?.full_name : order.buyer?.full_name}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-muted uppercase font-medium">Price</span>
+                          <span className="text-sm font-bold text-electricBlue">
+                            {order.proposed_price_tnd?.toFixed(2)} TND
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-row sm:flex-col justify-end gap-2 shrink-0">
+                      <Link href="/messages" className="flex-1 sm:flex-none">
+                        <Button variant="secondary" className="w-full gap-2 text-xs h-9">
+                          Chat & Details
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
             ))}
           </div>
-
-          {/* Load More */}
-          <div className="text-center py-4">
-            <button className="px-6 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm text-muted">
-              Load more requests...
-            </button>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="lg:col-span-4 space-y-4">
-          {/* Post Request CTA */}
-          <Card className="p-4 border-rose-400/30 bg-rose-400/10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-rose-400/20">
-                <Plus className="h-5 w-5 text-rose-300" />
-              </div>
-              <h3 className="font-semibold">Need something?</h3>
-            </div>
-            <p className="text-sm text-muted mb-4">
-              Post a request and let travelers bring it to you. Escrow protected!
-            </p>
-            <Button className="w-full gap-2">
-              <ShoppingBag className="h-4 w-4" />
-              Post Request
-            </Button>
-          </Card>
-
-          {/* Trending Needs */}
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="h-5 w-5 text-electricBlue" />
-              <h3 className="font-semibold">Trending Needs</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {popularNeeds.map((need) => (
-                <span
-                  key={need.tag}
-                  className="px-3 py-1.5 rounded-full bg-white/10 text-xs hover:bg-white/20 cursor-pointer transition-colors flex items-center gap-1"
-                >
-                  #{need.tag}
-                  <span className="text-muted">({need.count})</span>
-                </span>
-              ))}
-            </div>
-          </Card>
-
-          {/* Escrow Info */}
-          <Card className="p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <ShieldCheck className="h-5 w-5 text-emerald" />
-              <h3 className="font-semibold">Escrow Protection</h3>
-            </div>
-            <div className="space-y-3">
-              {timeline.map((item, index) => (
-                <div key={item} className="flex items-center gap-2">
-                  <div
-                    className={`h-2.5 w-2.5 rounded-full ${
-                      index < 2
-                        ? "bg-emerald shadow-[0_0_10px_rgba(47,204,154,0.8)]"
-                        : "bg-white/20"
-                    }`}
-                  />
-                  <p className={`text-sm ${index < 2 ? "" : "text-muted"}`}>{item}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-muted mt-4">
-              Your payment is held safely until delivery is confirmed
-            </p>
-          </Card>
-
-          {/* Quick Stats */}
-          <Card className="p-4">
-            <h3 className="font-semibold mb-3">Your Activity</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-white/5 text-center">
-                <p className="text-lg font-semibold text-electricBlue">3</p>
-                <p className="text-xs text-muted">Active Requests</p>
-              </div>
-              <div className="p-3 rounded-lg bg-white/5 text-center">
-                <p className="text-lg font-semibold text-emerald">5</p>
-                <p className="text-xs text-muted">Completed</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+        )}
       </div>
     </AppShell>
-  );
+  );        
 }

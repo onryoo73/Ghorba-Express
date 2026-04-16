@@ -10,6 +10,7 @@ import {
   Plane, 
   CheckCircle2,
   Clock,
+  Star,
   ArrowLeft,
   MoreVertical,
   ShieldCheck,
@@ -29,6 +30,7 @@ import { supabase } from "@/lib/supabase/client";
 import type { Post } from "@/lib/supabase/database.types";
 import { PaymentModal } from "@/components/payment-modal";
 import { DeliveryOTP } from "@/components/delivery-otp";
+import { ReviewModal } from "@/components/review-modal";
 import type { PostOffer } from "@/lib/supabase/database.types";
 
 interface ChatThread {
@@ -43,6 +45,8 @@ interface ChatThread {
   other_user?: { full_name: string; id: string };
   last_message?: { message: string; created_at: string; sender_id: string };
   unread_count?: number;
+  // Review status
+  has_reviewed?: boolean;
   // Payment fields
   payment_intent_id?: string;
   payment_method?: "konnect" | "manual" | null;
@@ -97,6 +101,7 @@ export default function MessagesPage(): JSX.Element {
   // Payment & Delivery modals
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState<"buyer" | "traveler">("buyer");
   
   // Agreed amount input (buyer enters what they agreed on)
@@ -111,7 +116,7 @@ export default function MessagesPage(): JSX.Element {
         post:posts(*, author:profiles(full_name)),
         buyer:profiles!buyer_id(full_name, id),
         traveler:profiles!traveler_id(full_name, id),
-        offer:post_offers(*),
+        offer:post_offers(*, reviews(reviewer_id)),
         messages:chat_messages(message, created_at, sender_id)
       `)
       .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`)
@@ -122,9 +127,11 @@ export default function MessagesPage(): JSX.Element {
     if (data) {
       const formatted = data.map((t: any) => {
         const lastMsg = t.messages?.[0];
+        const hasReviewed = t.offer?.reviews?.some((r: any) => r.reviewer_id === user.id);
         return {
           ...t,
           other_user: t.buyer_id === user.id ? t.traveler : t.buyer,
+          has_reviewed: hasReviewed,
           last_message: lastMsg ? { 
             message: lastMsg.message, 
             created_at: lastMsg.created_at,
@@ -230,6 +237,14 @@ export default function MessagesPage(): JSX.Element {
         schema: 'public',
         table: 'post_offers'
       }, () => fetchThreads())
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'reviews'
+      }, () => {
+        console.log('[Realtime] New review detected');
+        fetchThreads();
+      })
       .subscribe((status) => {
         console.log('[Realtime] Global subscription status:', status);
       });
@@ -872,6 +887,33 @@ export default function MessagesPage(): JSX.Element {
                       </div>
                     )}
                     
+                    {/* STEP 4: Transaction Completed - Show Rating */}
+                    {selectedThread.delivery_status === "completed" && (
+                      <div className="bg-emerald/10 border border-emerald/30 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-emerald">
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="text-sm font-medium">Transaction Completed</span>
+                        </div>
+                        <p className="text-xs text-emerald/80">
+                          The item has been delivered and payment has been released. 
+                        </p>
+                        {!selectedThread.has_reviewed ? (
+                          <Button 
+                            onClick={() => setShowReviewModal(true)}
+                            className="w-full bg-emerald hover:bg-emerald/80 gap-2 h-9 text-xs"
+                          >
+                            <Star className="h-3 w-3 fill-white" />
+                            Rate {selectedThread.other_user?.full_name || "User"}
+                          </Button>
+                        ) : (
+                          <div className="flex items-center gap-1 text-[10px] text-emerald font-medium bg-emerald/20 px-2 py-1 rounded-full w-fit">
+                            <Star className="h-2 w-2 fill-emerald" />
+                            Rated
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     {/* STEP 3: Payment Authorized - Delivery & Confirmation */}
                     {selectedThread.payment_status === "authorized" && (
                       <div className="flex items-center justify-between">
@@ -945,7 +987,7 @@ export default function MessagesPage(): JSX.Element {
                       </button>
                     </div>
                     <p className="text-xs text-muted mt-2 text-center">
-                      QR code scan required to release funds after delivery
+                      OTP is required to release funds after delivery
                     </p>
                   </div>
                 </>
@@ -1002,6 +1044,18 @@ export default function MessagesPage(): JSX.Element {
             }
             setShowPaymentModal(false);
           }}
+        />
+      )}
+
+      {/* Review Modal */}
+      {selectedThread && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          targetName={selectedThread.other_user?.full_name || "User"}
+          offerId={selectedThread.offer_id || ""}
+          targetId={selectedThread.other_user?.id || ""}
+          onSuccess={fetchThreads}
         />
       )}
       
