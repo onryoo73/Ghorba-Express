@@ -43,19 +43,17 @@ export async function POST(request: NextRequest) {
   const agreedAmount = Number(offer.amount_tnd || offer.proposed_price_tnd || 0);
   const travelerEarnings = agreedAmount - (offer.platform_fee_tnd || 0);
 
-  // Update offer - OTP verified, payment released
+  // Update offer - OTP verified, but payment NOT released yet (wait for admin)
   const { data, error } = await supabase
     .from("post_offers")
     .update({
       otp_verified: true,
       otp_verified_at: new Date().toISOString(),
-      payment_released: true,
-      payment_released_at: new Date().toISOString(),
-      payment_status: "captured",
       delivery_status: "completed",
       status: "completed",
       completed_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
+      // Note: payment_released is still false - admin will release after seeing payment info
     })
     .eq("id", offerId)
     .select()
@@ -63,71 +61,25 @@ export async function POST(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  // Update traveler wallet balance and log transaction
-  try {
-    // 1. Increment traveler's wallet balance
-    const { error: walletError } = await supabase.rpc('increment_wallet_balance', {
-      user_id: user.id,
-      amount: travelerEarnings
-    });
+  // Note: Wallet update and payment release happens when admin clicks "Release Payment"
+  // after seeing the traveler's D17/Flouci payment info
 
-    if (walletError) {
-      // If RPC fails, try manual update as fallback
-      const { data: profile } = await supabase.from('profiles').select('wallet_balance').eq('id', user.id).single();
-      const currentBalance = Number(profile?.wallet_balance || 0);
-      await supabase.from('profiles').update({ wallet_balance: currentBalance + travelerEarnings }).eq('id', user.id);
-    }
-
-    // 2. Log transaction
-    await supabase.from("wallet_transactions").insert({
-      user_id: user.id,
-      offer_id: offerId,
-      amount: travelerEarnings,
-      type: 'earning',
-      description: `Earnings for delivery: ${offer.id.slice(0, 8)}...`
-    });
-
-    // 3. Log payment history for buyer (as a payment)
-    await supabase.from("wallet_transactions").insert({
-      user_id: offer.buyer_id,
-      offer_id: offerId,
-      amount: offer.amount_tnd || 0,
-      type: 'payment',
-      description: `Payment for item delivery: ${offer.id.slice(0, 8)}...`
-    });
-  } catch (err) {
-    console.error("Wallet update error:", err);
-  }
-
-  // Create payment record
-  await supabase.from("payments").insert({
-    offer_id: offerId,
-    buyer_id: offer.buyer_id,
-    traveler_id: user.id,
-    stripe_payment_intent_id: offer.delivery_otp!, // Using OTP as reference for mock
-    amount_tnd: offer.amount_tnd || 0,
-    platform_fee_tnd: offer.platform_fee_tnd || 0,
-    traveler_earnings_tnd: travelerEarnings,
-    status: "captured",
-    captured_at: new Date().toISOString()
-  });
-
-  // Notify both parties
+  // Notify both parties - payment pending admin release
   await supabase.from("notifications").insert([
     {
       recipient_id: offer.buyer_id,
       sender_id: user.id,
       type: "escrow_update",
       title: "Delivery completed!",
-      message: "Your item has been delivered and payment has been released to the traveler.",
+      message: "Your item has been delivered. Admin will release payment to the traveler shortly.",
       offer_id: offerId
     },
     {
       recipient_id: user.id,
       sender_id: offer.buyer_id,
       type: "escrow_update",
-      title: "Payment released!",
-      message: `You have received ${travelerEarnings.toFixed(2)} TND for the delivery.`,
+      title: "Delivery verified!",
+      message: `Great! Please provide your payment details. You will receive ${travelerEarnings.toFixed(2)} TND once admin releases the payment.`,
       offer_id: offerId
     }
   ]);
@@ -135,6 +87,6 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ 
     offer: data,
     earnings: travelerEarnings,
-    message: "Payment released successfully!"
+    message: "OTP verified! Please provide your payment details."
   });
 }

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const supabase = getServiceSupabase();
   
   // Fetch payment proofs with buyer names
-  const { data, error } = await supabase
+  const { data: proofs, error: proofsError } = await supabase
     .from("payment_proofs")
     .select(`
       *,
@@ -17,7 +17,44 @@ export async function GET(request: NextRequest) {
     `)
     .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (proofsError) return NextResponse.json({ error: proofsError.message }, { status: 400 });
+
+  // Fetch pending traveler payments (OTP verified, waiting for release)
+  const { data: pendingPayments, error: pendingError } = await supabase
+    .from("post_offers")
+    .select(`
+      id,
+      offerer_id,
+      traveler_id,
+      buyer_id,
+      amount_tnd,
+      payment_status,
+      delivery_status,
+      traveler_payment_method,
+      traveler_payment_number,
+      traveler_payment_name,
+      payment_released,
+      otp_verified,
+      created_at,
+      traveler:profiles!traveler_id(full_name),
+      buyer:profiles!buyer_id(full_name)
+    `)
+    .eq("payment_status", "authorized")
+    .eq("delivery_status", "completed")
+    .eq("otp_verified", true)
+    .or("payment_released.eq.false,payment_released.is.null");
+
+  if (pendingError) return NextResponse.json({ error: pendingError.message }, { status: 400 });
   
-  return NextResponse.json({ data: data ?? [] });
+  // Format pending payments
+  const formattedPending = (pendingPayments || []).map((p: any) => ({
+    ...p,
+    traveler: Array.isArray(p.traveler) ? p.traveler[0] : p.traveler,
+    buyer: Array.isArray(p.buyer) ? p.buyer[0] : p.buyer
+  }));
+  
+  return NextResponse.json({ 
+    data: proofs ?? [],
+    pendingPayments: formattedPending
+  });
 }

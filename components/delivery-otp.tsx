@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { PostOffer } from "@/lib/supabase/database.types";
 import { supabase } from "@/lib/supabase/client";
+import { TravelerPaymentInfo } from "./traveler-payment-info";
 
 interface DeliveryOTPProps {
   isOpen: boolean;
@@ -32,7 +33,8 @@ export function DeliveryOTP({
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [otp, setOtp] = useState<string | null>(offer.delivery_otp || null); // Initialize from offer if available
+  const [otp, setOtp] = useState<string | null>(offer.delivery_otp || null);
+  const [showPaymentInfo, setShowPaymentInfo] = useState(false); // Initialize from offer if available
   const [deliveryStage, setDeliveryStage] = useState<
     "traveler_confirm" | "buyer_confirm" | "otp_reveal" | "otp_verify" | "waiting_buyer" | "waiting_traveler"
   >(() => {
@@ -147,9 +149,14 @@ export function DeliveryOTP({
 
       setConfirmed(true);
       setTimeout(() => {
-        onConfirmed();
-        onClose();
-      }, 2000);
+        // After OTP verified, show payment info modal for traveler
+        if (mode === "traveler") {
+          setShowPaymentInfo(true);
+        } else {
+          onConfirmed();
+          onClose();
+        }
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to verify OTP");
     } finally {
@@ -248,12 +255,12 @@ export function DeliveryOTP({
                     <CheckCircle2 className="h-10 w-10 text-emerald" />
                   </motion.div>
                   <h3 className="text-xl font-semibold mb-2">
-                    {mode === "buyer" ? "Delivery Confirmed!" : "Payment Released!"}
+                    {mode === "buyer" ? "Delivery Confirmed!" : "OTP Verified!"}
                   </h3>
                   <p className="text-muted">
                     {mode === "buyer" 
                       ? "Your item has been delivered successfully." 
-                      : "Funds have been released to your account."}
+                      : "Please provide your payment details. Admin will release payment shortly."}
                   </p>
                 </div>
               ) : mode === "buyer" ? (
@@ -443,6 +450,23 @@ export function DeliveryOTP({
           </Card>
         </motion.div>
       </motion.div>
+
+      {/* Traveler Payment Info Modal */}
+      {showPaymentInfo && (
+        <TravelerPaymentInfo
+          isOpen={showPaymentInfo}
+          onClose={() => {
+            setShowPaymentInfo(false);
+            onConfirmed();
+            onClose();
+          }}
+          offerId={offer.id}
+          onSuccess={() => {
+            onConfirmed();
+            onClose();
+          }}
+        />
+      )}
     </AnimatePresence>
   );
 }
