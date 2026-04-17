@@ -4,10 +4,10 @@ import { locales, defaultLocale } from "./i18n";
 export default createMiddleware({
   locales,
   defaultLocale,
-  localePrefix: "never", // Don't add locale to URL
-  localeDetection: true,
+  localePrefix: "as-needed",
 });
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|static|.*\\..*).*)"],
+  // Match all paths except static files and api
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.svg).*)"],
 };
