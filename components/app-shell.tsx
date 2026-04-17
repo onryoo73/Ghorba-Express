@@ -65,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }): JSX.Eleme
           role={role}
           effectiveRole={effectiveRole}
           isAdmin={isAdmin}
+          userId={user?.id}
           onModeChange={setActiveMode}
           onSignOut={signOut}
         />

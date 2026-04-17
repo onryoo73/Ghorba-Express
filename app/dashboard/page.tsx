@@ -108,24 +108,68 @@ export default function DashboardPage(): JSX.Element {
           deliveriesCount: profile?.total_deliveries || 0
         });
 
-        // Mock activities - in real app, fetch from notifications/activity log
-        setActivities([
-          {
-            id: "1",
-            type: "order",
-            title: "New order request",
-            description: "Someone wants you to deliver an item from Tunis to Sfax",
-            timestamp: "2 hours ago",
-            status: "pending"
-          },
-          {
-            id: "2",
-            type: "message",
-            title: "New message",
-            description: "Ahmed sent you a message about your trip",
-            timestamp: "5 hours ago"
+        // Load real notifications as activity
+        const { data: notifsData } = await supabase!
+          .from("notifications")
+          .select("id, title, message, type, created_at, is_read")
+          .eq("recipient_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        // Map notifications to activity items
+        const realActivities: RecentActivity[] = (notifsData || []).map((n: any) => ({
+          id: n.id,
+          type: (n.type === "escrow_update" || n.type === "payment" ? "payment" :
+                n.type === "new_message" || n.type === "chat" ? "message" :
+                n.type === "new_offer" || n.type === "offer" ? "order" :
+                "trip") as RecentActivity["type"],
+          title: n.title,
+          description: n.message || "",
+          timestamp: new Date(n.created_at).toLocaleString(),
+          status: n.is_read ? undefined : "new"
+        }));
+
+        // If no notifications yet, build from recent offers
+        if (realActivities.length === 0) {
+          const { data: recentOffers } = await supabase!
+            .from("post_offers")
+            .select(`
+              id, status, payment_status, delivery_status, created_at, amount_tnd,
+              traveler:profiles!traveler_id(full_name),
+              buyer:profiles!buyer_id(full_name),
+              post:posts!inner(item_name)
+            `)
+            .or(`buyer_id.eq.${user.id},offerer_id.eq.${user.id}`)
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+          for (const o of (recentOffers || [])) {
+            const isBuyer = o.buyer_id === user.id || (o as any).buyer?.id === user.id;
+            const travelerName = Array.isArray((o as any).traveler) ? (o as any).traveler[0]?.full_name : (o as any).traveler?.full_name || "Traveler";
+            const buyerName = Array.isArray((o as any).buyer) ? (o as any).buyer[0]?.full_name : (o as any).buyer?.full_name || "Buyer";
+            const itemName = Array.isArray((o as any).post) ? (o as any).post[0]?.item_name : (o as any).post?.item_name || "item";
+
+            if (isBuyer) {
+              realActivities.push({
+                id: o.id, type: "order",
+                title: `Offer for ${itemName}`,
+                description: `${travelerName} offered to deliver · ${(o as any).amount_tnd?.toFixed(2) || "0.00"} TND`,
+                timestamp: new Date(o.created_at).toLocaleString(),
+                status: o.status
+              });
+            } else {
+              realActivities.push({
+                id: o.id, type: "payment",
+                title: o.status === "completed" ? "Payment received" : `Delivery: ${o.delivery_status}`,
+                description: `${buyerName} · ${(o as any).amount_tnd?.toFixed(2) || "0.00"} TND`,
+                timestamp: new Date(o.created_at).toLocaleString(),
+                status: o.status
+              });
+            }
           }
-        ]);
+        }
+
+        setActivities(realActivities);
 
       } catch (err) {
         console.error("Failed to load dashboard:", err);
@@ -370,7 +414,9 @@ export default function DashboardPage(): JSX.Element {
                       {activity.status && (
                         <span className={cn(
                           "px-2 py-1 rounded-full text-xs",
+                          activity.status === "new" && "bg-electricBlue/20 text-electricBlue",
                           activity.status === "pending" && "bg-amber-500/20 text-amber-400",
+                          activity.status === "accepted" && "bg-blue-500/20 text-blue-400",
                           activity.status === "completed" && "bg-emerald-500/20 text-emerald-400"
                         )}>
                           {activity.status}
