@@ -67,7 +67,10 @@ export default function WalletPage(): JSX.Element {
             <p className="text-xs text-muted mb-1">Pending / Locked Balance</p>
             <div className="flex items-baseline gap-2">
               <p className="text-3xl font-bold text-electricBlue">
-                {stats?.locked.toLocaleString() || "0"}
+                {(() => {
+                  const val = stats?.locked;
+                  return (typeof val === 'number' && !isNaN(val)) ? val.toLocaleString() : "0";
+                })()}
               </p>
               <span className="text-sm font-medium text-electricBlue/60">TND</span>
             </div>
@@ -81,7 +84,10 @@ export default function WalletPage(): JSX.Element {
             <p className="text-xs text-muted mb-1">Available Balance</p>
             <div className="flex items-baseline gap-2">
               <p className="text-3xl font-bold text-emerald">
-                {stats?.available.toLocaleString() || "0"}
+                {(() => {
+                  const val = stats?.available;
+                  return (typeof val === 'number' && !isNaN(val)) ? val.toLocaleString() : "0";
+                })()}
               </p>
               <span className="text-sm font-medium text-emerald/60">TND</span>
             </div>
@@ -115,12 +121,12 @@ export default function WalletPage(): JSX.Element {
                       </div>
                     </div>
                     <p className={`text-sm font-bold ${
-                      t.type === 'earning' || t.type === 'deposit' || t.type === 'refund' 
-                      ? 'text-emerald' 
+                      t.type === 'earning' || t.type === 'deposit' || t.type === 'refund'
+                      ? 'text-emerald'
                       : 'text-rose-400'
                     }`}>
                       {t.type === 'earning' || t.type === 'deposit' || t.type === 'refund' ? '+' : '-'}
-                      {t.amount.toLocaleString()} TND
+                      {(typeof t.amount === 'number' && !isNaN(t.amount)) ? t.amount.toLocaleString() : "0"} TND
                     </p>
                   </div>
                 ))}

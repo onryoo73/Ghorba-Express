@@ -55,9 +55,13 @@ export async function GET(request: NextRequest) {
 
     if (transError) throw transError;
 
+    // Ensure we return valid numbers (not null/undefined/NaN)
+    const availableBalance = Number(profile?.wallet_balance) || 0;
+    const lockedBalance = lockedBuyer + lockedTraveler;
+
     return NextResponse.json({
-      available: profile.wallet_balance || 0,
-      locked: lockedBuyer + lockedTraveler,
+      available: isNaN(availableBalance) ? 0 : availableBalance,
+      locked: isNaN(lockedBalance) ? 0 : lockedBalance,
       transactions: transactions || []
     });
 

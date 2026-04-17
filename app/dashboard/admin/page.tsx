@@ -73,6 +73,21 @@ interface OrderCard {
   status: "buyer_pending" | "buyer_approved" | "traveler_pending" | "ready_release" | "released";
 }
 
+interface AdminStats {
+  totalFees: number;
+  totalTravelerEarnings: number;
+  totalVolume: number;
+  recentFees: Array<{
+    id: string;
+    amount: number;
+    created_at: string;
+    offer?: {
+      buyer?: { full_name: string };
+      traveler?: { full_name: string };
+    };
+  }>;
+}
+
 export default function AdminDashboardPage(): JSX.Element {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [disputes, setDisputes] = useState<DisputeRow[]>([]);
@@ -83,6 +98,7 @@ export default function AdminDashboardPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderCard | null>(null);
+  const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -109,6 +125,14 @@ export default function AdminDashboardPage(): JSX.Element {
       const proofsResult = await authedJsonFetch<{ data: PaymentProof[]; pendingPayments: PendingPayment[] }>("/api/admin/payment-proofs");
       setPaymentProofs(proofsResult.data || []);
       setPendingPayments(proofsResult.pendingPayments || []);
+
+      // Fetch admin stats (platform revenue)
+      try {
+        const statsResult = await authedJsonFetch<AdminStats>("/api/admin/stats");
+        setAdminStats(statsResult);
+      } catch (e) {
+        console.error("Failed to load admin stats:", e);
+      }
 
       setError(null);
     } catch (err) {
@@ -249,6 +273,33 @@ export default function AdminDashboardPage(): JSX.Element {
         <section className="space-y-4">
           <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
           {error && <p className="text-sm text-red-400 bg-red-400/10 p-3 rounded-lg">{error}</p>}
+
+          {/* Platform Revenue Stats */}
+          {adminStats && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-4 bg-emerald/5 border-emerald/20">
+                <p className="text-xs text-muted uppercase tracking-wide">Platform Fees Collected</p>
+                <p className="text-2xl font-bold text-emerald mt-1">
+                  {adminStats.totalFees.toFixed(2)} TND
+                </p>
+                <p className="text-xs text-muted mt-1">Admin revenue</p>
+              </Card>
+              <Card className="p-4 bg-blue/5 border-blue/20">
+                <p className="text-xs text-muted uppercase tracking-wide">Paid to Travelers</p>
+                <p className="text-2xl font-bold text-blue mt-1">
+                  {adminStats.totalTravelerEarnings.toFixed(2)} TND
+                </p>
+                <p className="text-xs text-muted mt-1">Total earnings</p>
+              </Card>
+              <Card className="p-4 bg-electricBlue/5 border-electricBlue/20">
+                <p className="text-xs text-muted uppercase tracking-wide">Total Volume</p>
+                <p className="text-2xl font-bold text-electricBlue mt-1">
+                  {adminStats.totalVolume.toFixed(2)} TND
+                </p>
+                <p className="text-xs text-muted mt-1">Gross payments</p>
+              </Card>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Order Cards List */}
@@ -431,6 +482,29 @@ export default function AdminDashboardPage(): JSX.Element {
                                 <p className="text-xs text-muted">{selectedOrder.travelerPayment.traveler_payment_name}</p>
                               )}
                             </div>
+                            {/* Fee Breakdown */}
+                            {(() => {
+                              const amount = selectedOrder.travelerPayment?.amount_tnd || 0;
+                              const feeRate = amount > 800 ? 2 : amount > 500 ? 3 : 5;
+                              const fee = amount * (feeRate / 100);
+                              const net = amount - fee;
+                              return (
+                                <div className="border-t border-white/10 pt-2 mt-2 space-y-1">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted">Total Amount:</span>
+                                    <span>{amount.toFixed(2)} TND</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted">Platform Fee ({feeRate}%):</span>
+                                    <span className="text-amber">-{fee.toFixed(2)} TND</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs font-medium border-t border-white/10 pt-1">
+                                    <span className="text-emerald">Traveler Receives:</span>
+                                    <span className="text-emerald">{net.toFixed(2)} TND</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-amber text-xs">

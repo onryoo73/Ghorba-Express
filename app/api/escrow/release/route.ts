@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       const currentBalance = Number(profile?.wallet_balance || 0);
       await supabase.from('profiles').update({ wallet_balance: currentBalance + travelerEarnings }).eq('id', offer.traveler_id);
       
-      // Log transaction
+      // Log traveler earnings transaction
       await supabase.from("wallet_transactions").insert({
         user_id: offer.traveler_id,
         offer_id: offerId,
@@ -53,6 +53,18 @@ export async function POST(request: NextRequest) {
         type: 'earning',
         description: `Earnings for delivery: ${offer.id.slice(0, 8)}...`
       });
+
+      // Log platform fee to admin revenue (user_id null = platform)
+      const platformFee = offer.platform_fee_tnd || 0;
+      if (platformFee > 0) {
+        await supabase.from("wallet_transactions").insert({
+          user_id: null, // null = platform revenue
+          offer_id: offerId,
+          amount: platformFee,
+          type: 'platform_fee',
+          description: `Platform fee from offer: ${offer.id.slice(0, 8)}...`
+        });
+      }
     } catch (err) {
       console.error("Wallet update error:", err);
     }
