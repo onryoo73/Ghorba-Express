@@ -64,15 +64,28 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
     const uploadedUrls: string[] = [];
     
     for (const file of selectedImages) {
-      const fileName = `${user?.id}/${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      console.log('[Upload] Starting upload:', fileName, 'Size:', file.size, 'Type:', file.type);
+      
       const { data, error } = await supabase.storage
         .from('post-images')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
-      if (!error && data) {
+      if (error) {
+        console.error('[Upload] Error uploading image:', error.message, error);
+        continue;
+      }
+      
+      if (data) {
         const { data: urlData } = supabase.storage
           .from('post-images')
           .getPublicUrl(data.path);
+        console.log('[Upload] Success! URL:', urlData.publicUrl);
         uploadedUrls.push(urlData.publicUrl);
       }
     }
@@ -80,12 +93,20 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
     return uploadedUrls;
   };
 
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const handleSubmit = async () => {
     if (!user || !content.trim() || !postType) return;
+    setUploadError(null);
 
     try {
       // Upload images first
       const imageUrls = await uploadImages();
+      
+      if (selectedImages.length > 0 && imageUrls.length === 0) {
+        setUploadError("Failed to upload images. Please try again.");
+        return;
+      }
 
       const postData = {
         author_id: user.id,
@@ -99,6 +120,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
       onPostCreated?.();
     } catch (err) {
       console.error("Failed to create post:", err);
+      setUploadError("Failed to create post. Please try again.");
     }
   };
 
@@ -231,6 +253,13 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
               className="w-full bg-transparent resize-none outline-none min-h-[100px] text-sm mb-3"
               autoFocus
             />
+
+            {/* Error Message */}
+            {uploadError && (
+              <div className="mb-3 p-3 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-300 text-sm">
+                {uploadError}
+              </div>
+            )}
 
             {/* Image Previews */}
             {imagePreviewUrls.length > 0 && (

@@ -146,12 +146,24 @@ export function PaymentModal({
 
     try {
       // 1. Upload screenshot to dedicated payment-proofs bucket
-      const fileName = `${user.id}/payment-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      const fileExt = screenshot.name.split('.').pop();
+      const fileName = `${user.id}/payment-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      console.log('[Payment Upload] Starting upload:', fileName, 'Size:', screenshot.size);
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('payment-proofs')
-        .upload(fileName, screenshot);
+        .upload(fileName, screenshot, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('[Payment Upload] Error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+      
+      console.log('[Payment Upload] Success:', uploadData?.path);
 
       const { data: { publicUrl } } = supabase.storage
         .from('payment-proofs')

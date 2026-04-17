@@ -65,12 +65,11 @@ export default function DashboardPage(): JSX.Element {
           .select("payment_status, amount_tnd, buyer_id, traveler_id")
           .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`);
 
-        // Load trips data
+        // Load trips data from trips table (not posts)
         const { data: tripsData } = await supabase!
-          .from("posts")
-          .select("status, type")
-          .eq("author_id", user.id)
-          .eq("type", "trip");
+          .from("trips")
+          .select("status")
+          .eq("traveler_id", user.id);
 
         // Load unread messages
         const { count: unreadCount } = await supabase!
@@ -96,7 +95,7 @@ export default function DashboardPage(): JSX.Element {
           ?.filter(o => o.traveler_id === user.id && o.payment_status === "captured")
           .reduce((sum, o) => sum + (o.amount_tnd || 0), 0) || 0;
 
-        const activeTrips = tripsData?.filter(t => t.status === "active").length || 0;
+        const activeTrips = tripsData?.filter(t => t.status === "open").length || 0;
 
         setStats({
           activeOrders,
