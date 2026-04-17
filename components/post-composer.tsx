@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ImagePlus,
@@ -152,9 +153,9 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
             className="p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-electricBlue to-emerald flex items-center justify-center text-white font-semibold">
+              <Link href={`/profile/${user?.id}`} className="h-10 w-10 rounded-full bg-gradient-to-br from-electricBlue to-emerald flex items-center justify-center text-white font-semibold hover:ring-2 hover:ring-electricBlue/50 transition-all">
                 {user?.user_metadata?.full_name?.charAt(0) || "Y"}
-              </div>
+              </Link>
               <button
                 onClick={() => setIsExpanded(true)}
                 className="flex-1 text-left px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-muted text-sm"

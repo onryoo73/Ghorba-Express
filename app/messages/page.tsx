@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   MessageSquare, 
@@ -442,9 +443,9 @@ export default function MessagesPage(): JSX.Element {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium truncate">
+                                <Link href={`/profile/${thread.other_user?.id}`} className="font-medium truncate hover:text-electricBlue transition-colors">
                                   {thread.other_user?.full_name || "Unknown"}
-                                </span>
+                                </Link>
                                 <span className="text-[10px] border border-white/20 px-1.5 py-0.5 rounded shrink-0">
                                   {isBuyer ? "Traveler" : "Buyer"}
                                 </span>
@@ -490,7 +491,7 @@ export default function MessagesPage(): JSX.Element {
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium">{selectedThread.other_user?.full_name}</p>
+                      <Link href={`/profile/${selectedThread.other_user?.id}`} className="font-medium hover:text-electricBlue transition-colors">{selectedThread.other_user?.full_name}</Link>
                       <p className="text-xs text-muted">
                         {selectedThread.status === "active" ? "Active conversation" : "Completed"}
                       </p>

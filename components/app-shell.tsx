@@ -53,6 +53,9 @@ export function AppShell({ children }: { children: React.ReactNode }): JSX.Eleme
         role={role}
         effectiveRole={effectiveRole}
         isAdmin={isAdmin}
+        userId={user?.id}
+        userName={user?.user_metadata?.full_name}
+        userAvatar={user?.user_metadata?.avatar_url}
       />
       <div
         className={cn(

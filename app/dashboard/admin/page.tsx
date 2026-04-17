@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, CheckCircle2, Smartphone, CreditCard, User, ArrowRight, ExternalLink, X, ChevronRight, Clock, AlertCircle } from "lucide-react";
+import { Wallet, CheckCircle2, Smartphone, CreditCard, User, ArrowRight, ExternalLink, X, ChevronRight, Clock, AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { DashboardGuard } from "@/components/guards/dashboard-guard";
@@ -27,6 +27,7 @@ interface DisputeRow {
 interface PaymentProof {
   id: string;
   offer_id: string;
+  order_id?: string;
   buyer_id: string;
   provider: string;
   image_url: string;
@@ -35,6 +36,15 @@ interface PaymentProof {
   verified: boolean;
   created_at: string;
   buyer?: { full_name: string };
+  // Offer status from joined post_offers
+  offer_payment_released?: boolean;
+  offer_payment_status?: string | null;
+  offer_delivery_status?: string | null;
+  offer_otp_verified?: boolean;
+  offer_traveler_payment_method?: string | null;
+  offer_traveler_payment_number?: string | null;
+  offer_traveler_payment_name?: string | null;
+  offer_traveler_id?: string | null;
 }
 
 interface PendingPayment {
@@ -75,13 +85,25 @@ export default function AdminDashboardPage(): JSX.Element {
   const [selectedOrder, setSelectedOrder] = useState<OrderCard | null>(null);
 
   const loadAdminData = async () => {
+    setLoading(true);
     try {
-      const [ordersResult, disputesResult] = await Promise.all([
-        authedJsonFetch<{ orders: OrderRow[] }>("/api/admin/orders"),
-        authedJsonFetch<{ disputes: DisputeRow[] }>("/api/admin/disputes")
-      ]);
-      setOrders(ordersResult.orders);
-      setDisputes(disputesResult.disputes);
+      // Fetch orders
+      try {
+        const ordersResult = await authedJsonFetch<{ orders: OrderRow[] }>("/api/admin/orders");
+        setOrders(ordersResult.orders || []);
+      } catch (e) {
+        console.error("Failed to load orders:", e);
+        setOrders([]);
+      }
+      
+      // Fetch disputes
+      try {
+        const disputesResult = await authedJsonFetch<{ disputes: DisputeRow[] }>("/api/admin/disputes");
+        setDisputes(disputesResult.disputes || []);
+      } catch (e) {
+        console.error("Failed to load disputes:", e);
+        setDisputes([]);
+      }
       
       // Fetch payment proofs and pending traveler payments
       const proofsResult = await authedJsonFetch<{ data: PaymentProof[]; pendingPayments: PendingPayment[] }>("/api/admin/payment-proofs");
@@ -90,67 +112,88 @@ export default function AdminDashboardPage(): JSX.Element {
 
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load admin data.");
+      console.error("Admin data load error:", err);
+      setError(err instanceof Error ? err.message : "Failed to load admin data - check console for details");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("[Admin] Loading data...");
     void loadAdminData();
   }, []);
 
-  // Merge proofs + traveler payments into unified order cards
+  // Build order cards from proofs (which now include offer status)
   const buildOrderCards = (): OrderCard[] => {
-    const cardMap = new Map<string, OrderCard>();
+    const cards: OrderCard[] = [];
 
-    // Add buyer payment proofs
     for (const proof of paymentProofs) {
-      const key = proof.offer_id;
-      if (!cardMap.has(key)) {
-        cardMap.set(key, { id: key, status: "buyer_pending" });
-      }
-      const card = cardMap.get(key)!;
-      card.buyerProof = proof;
-    }
+      const key = proof.offer_id || proof.order_id || proof.id;
+      
+      // Synthetic proofs (Konnect payments) are auto-verified
+      const isSynthetic = proof.id?.startsWith("synthetic_");
+      const isVerified = proof.verified || isSynthetic;
 
-    // Add traveler pending payments
-    for (const payment of pendingPayments) {
-      // Match by offer id - the proof's offer_id may match the payment's id or offerer_id
-      let key = payment.offerer_id || payment.id;
-      // Try to find matching proof
-      let found = false;
-      for (const [k] of cardMap) {
-        if (k === payment.id || k === payment.offerer_id) {
-          key = k;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        if (!cardMap.has(key)) {
-          cardMap.set(key, { id: key, status: "traveler_pending" });
-        }
-      }
-      const card = cardMap.get(key)!;
-      card.travelerPayment = payment;
-    }
+      // Build a synthetic travelerPayment from the offer data embedded in the proof
+      const offerTravelerPayment: PendingPayment | undefined =
+        proof.offer_traveler_id ? {
+          id: proof.offer_id,
+          offerer_id: "",
+          traveler_id: proof.offer_traveler_id,
+          amount_tnd: proof.amount_tnd,
+          payment_status: proof.offer_payment_status || "",
+          delivery_status: proof.offer_delivery_status || "",
+          traveler_payment_method: proof.offer_traveler_payment_method || undefined,
+          traveler_payment_number: proof.offer_traveler_payment_number || undefined,
+          traveler_payment_name: proof.offer_traveler_payment_name || undefined,
+          payment_released: proof.offer_payment_released || false,
+          otp_verified: proof.offer_otp_verified || false,
+        } : undefined;
 
-    // Determine status for each card
-    for (const card of cardMap.values()) {
-      if (card.travelerPayment?.payment_released) {
-        card.status = "released";
-      } else if (card.travelerPayment?.traveler_payment_method && card.buyerProof?.verified) {
-        card.status = "ready_release";
-      } else if (card.travelerPayment && card.buyerProof?.verified) {
-        card.status = "traveler_pending";
-      } else if (card.buyerProof?.verified) {
-        card.status = "buyer_approved";
+      // Determine status
+      let status: OrderCard["status"];
+      if (proof.offer_payment_released) {
+        status = "released";
+      } else if (proof.offer_traveler_payment_method && isVerified) {
+        status = "ready_release";
+      } else if (proof.offer_otp_verified && isVerified && !proof.offer_traveler_payment_method) {
+        status = "traveler_pending";
+      } else if (isVerified) {
+        status = "buyer_approved";
       } else {
-        card.status = "buyer_pending";
+        status = "buyer_pending";
+      }
+
+      cards.push({
+        id: key,
+        buyerProof: proof,
+        travelerPayment: offerTravelerPayment,
+        status,
+      });
+    }
+
+    // Also add any pending payments that don't have a proof
+    for (const payment of pendingPayments) {
+      const existingCard = cards.find(c => c.id === payment.id || c.id === payment.offerer_id);
+      if (!existingCard) {
+        cards.push({
+          id: payment.id,
+          travelerPayment: payment,
+          status: payment.payment_released ? "released" :
+            payment.traveler_payment_method ? "ready_release" : "traveler_pending",
+        });
       }
     }
 
-    return Array.from(cardMap.values());
+    // Filter based on showReleased toggle
+    if (!showReleased) {
+      return cards.filter(card => card.status !== "released");
+    }
+    return cards;
   };
+  
+  const [showReleased, setShowReleased] = useState(false);
 
   const orderCards = buildOrderCards();
 
@@ -159,7 +202,7 @@ export default function AdminDashboardPage(): JSX.Element {
       case "buyer_pending":
         return <Badge className="bg-amber/20 text-amber text-[10px]">Buyer Payment</Badge>;
       case "buyer_approved":
-        return <Badge className="bg-emerald/20 text-emerald text-[10px]">Buyer Approved</Badge>;
+        return <Badge className="bg-blue/20 text-blue text-[10px]">Awaiting Delivery</Badge>;
       case "traveler_pending":
         return <Badge className="bg-blue/20 text-blue text-[10px]">Traveler Info</Badge>;
       case "ready_release":
@@ -210,10 +253,31 @@ export default function AdminDashboardPage(): JSX.Element {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Order Cards List */}
             <Card className="space-y-4">
-              <h2 className="font-semibold text-lg flex items-center gap-2">
-                <Wallet className="h-5 w-5 text-electricBlue" />
-                Orders
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-lg flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-electricBlue" />
+                  Orders
+                </h2>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={showReleased}
+                      onChange={(e) => setShowReleased(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-muted">Show released</span>
+                  </label>
+                  <Button 
+                    variant="secondary" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => void loadAdminData()}
+                    disabled={loading}
+                  >
+                    <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+              </div>
               <div className="space-y-2">
                 {orderCards.map((card) => (
                   <button
@@ -279,18 +343,32 @@ export default function AdminDashboardPage(): JSX.Element {
                         </div>
 
                         <div className="flex gap-3">
-                          <a href={selectedOrder.buyerProof.image_url} target="_blank" rel="noreferrer" className="block">
-                            <div className="w-28 h-28 rounded-lg overflow-hidden border border-white/10 hover:border-electricBlue transition-colors">
-                              <img src={selectedOrder.buyerProof.image_url} alt="Proof" className="w-full h-full object-cover" />
+                          {selectedOrder.buyerProof.image_url ? (
+                            <a href={selectedOrder.buyerProof.image_url} target="_blank" rel="noreferrer" className="block">
+                              <div className="w-28 h-28 rounded-lg overflow-hidden border border-white/10 hover:border-electricBlue transition-colors">
+                                <img src={selectedOrder.buyerProof.image_url} alt="Proof" className="w-full h-full object-cover" />
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="w-28 h-28 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center">
+                              <CreditCard className="h-8 w-8 text-electricBlue/50" />
                             </div>
-                          </a>
+                          )}
                           <div className="space-y-1 text-xs">
                             <p className="text-muted">TRX: <span className="text-white font-mono">{selectedOrder.buyerProof.transaction_id}</span></p>
                             <p className="text-muted">{new Date(selectedOrder.buyerProof.created_at).toLocaleString()}</p>
+                            {selectedOrder.buyerProof.provider === "konnect" && (
+                              <Badge className="bg-electricBlue/20 text-electricBlue text-[10px]">Konnect Payment</Badge>
+                            )}
                           </div>
                         </div>
 
-                        {!selectedOrder.buyerProof.verified ? (
+                        {selectedOrder.buyerProof.id?.startsWith("synthetic_") ? (
+                          <div className="flex items-center gap-2 text-electricBlue text-xs font-medium">
+                            <CreditCard className="h-4 w-4" />
+                            Konnect Payment (Auto-verified)
+                          </div>
+                        ) : !selectedOrder.buyerProof.verified ? (
                           <div className="flex gap-2">
                             <Button
                               onClick={() => void verifyPayment(selectedOrder.buyerProof!.id, selectedOrder.buyerProof!.offer_id, true)}
@@ -380,12 +458,21 @@ export default function AdminDashboardPage(): JSX.Element {
                     </div>
                   )}
 
-                  {/* No traveler payment yet */}
-                  {!selectedOrder.travelerPayment && selectedOrder.buyerProof?.verified && (
+                  {/* No traveler payment info yet - waiting for traveler to provide D17/Flouci */}
+                  {selectedOrder.travelerPayment && !selectedOrder.travelerPayment.traveler_payment_method && selectedOrder.buyerProof?.verified && (
                     <div className="rounded-xl border border-white/10 p-3 bg-white/5">
                       <div className="flex items-center gap-2 text-amber text-xs">
                         <Clock className="h-4 w-4" />
-                        Awaiting delivery confirmation & traveler payment info
+                        Awaiting traveler payment info. The traveler needs to provide D17/Flouci details after delivery.
+                      </div>
+                    </div>
+                  )}
+                  {/* Buyer approved but no traveler data at all - delivery in progress */}
+                  {!selectedOrder.travelerPayment && selectedOrder.buyerProof?.verified && (
+                    <div className="rounded-xl border border-white/10 p-3 bg-white/5">
+                      <div className="flex items-center gap-2 text-blue text-xs">
+                        <Clock className="h-4 w-4" />
+                        Payment verified. Delivery in progress - waiting for OTP confirmation.
                       </div>
                     </div>
                   )}

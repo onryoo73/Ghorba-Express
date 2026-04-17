@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Weight, Star, BadgeCheck, Plane, MessageCircle, Clock, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -117,12 +118,14 @@ export function TripCard({ trip }: TripCardProps): JSX.Element {
         <Card className="p-5 hover:border-white/20 transition-colors">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald to-electricBlue flex items-center justify-center text-white font-semibold">
+              <Link href={`/profile/${trip.traveler_id}`} className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald to-electricBlue flex items-center justify-center text-white font-semibold hover:ring-2 hover:ring-emerald/50 transition-all">
                 {trip.author?.full_name?.charAt(0) || "T"}
-              </div>
+              </Link>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{trip.author?.full_name || "Traveler"}</span>
+                  <Link href={`/profile/${trip.traveler_id}`} className="font-medium hover:text-emerald transition-colors">
+                    {trip.author?.full_name || "Traveler"}
+                  </Link>
                   {trip.author?.verified && (
                     <BadgeCheck className="h-4 w-4 text-electricBlue" />
                   )}

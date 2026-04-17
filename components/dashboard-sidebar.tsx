@@ -26,6 +26,9 @@ interface DashboardSidebarProps {
   role: UserRole | null;
   effectiveRole: DashboardMode | null;
   isAdmin: boolean;
+  userId?: string;
+  userName?: string;
+  userAvatar?: string;
 }
 
 export function DashboardSidebar({
@@ -34,7 +37,10 @@ export function DashboardSidebar({
   isAuthenticated,
   role,
   effectiveRole,
-  isAdmin
+  isAdmin,
+  userId,
+  userName,
+  userAvatar
 }: DashboardSidebarProps): JSX.Element {
   const pathname = usePathname();
 
@@ -84,6 +90,31 @@ export function DashboardSidebar({
             {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
+
+        {/* User Profile Link */}
+        {isAuthenticated && userId && (
+          <Link
+            href={`/profile/${userId}`}
+            className={cn(
+              "mb-4 flex items-center rounded-xl p-2 transition hover:bg-white/5",
+              isOpen ? "gap-3" : "justify-center"
+            )}
+          >
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-electricBlue to-emerald flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
+              {userAvatar ? (
+                <img src={userAvatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                userName?.charAt(0) || "U"
+              )}
+            </div>
+            {isOpen && (
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{userName || "User"}</p>
+                <p className="text-[10px] text-muted truncate">{isAdmin ? "Admin" : role === "both" ? `Both · ${effectiveRole}` : role || "Member"}</p>
+              </div>
+            )}
+          </Link>
+        )}
 
         <nav className="space-y-1">
           {links.map((link) => {

@@ -63,13 +63,15 @@ export async function POST(request: NextRequest) {
         description: `Manual payment confirmed: ${offerId.slice(0, 8)}...`
       });
 
-      // 4. Mark proof as verified
-      const { error: proofError } = await supabase
-        .from("payment_proofs")
-        .update({ verified: true })
-        .eq("id", proofId);
+      // 4. Mark proof as verified (only for real proofs, not synthetic ones)
+      if (!proofId.startsWith("synthetic_")) {
+        const { error: proofError } = await supabase
+          .from("payment_proofs")
+          .update({ verified: true })
+          .eq("id", proofId);
 
-      if (proofError) throw proofError;
+        if (proofError) throw proofError;
+      }
 
       // 4. Notify buyer and traveler
       await supabase.from("notifications").insert([

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, MessageCircle, ShoppingBag, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -139,7 +140,7 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
                           {isRequest ? "Make an Offer" : "Request Delivery"}
                         </h3>
                         <p className="text-xs text-muted">
-                          To {author?.full_name || "Unknown"}
+                          To <Link href={`/profile/${post.author_id}`} className="text-electricBlue hover:underline">{author?.full_name || "Unknown"}</Link>
                         </p>
                       </div>
                     </div>

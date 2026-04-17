@@ -25,12 +25,25 @@ export async function getAuthedProfile(request: NextRequest) {
 }
 
 export async function requireAdmin(request: NextRequest) {
+  console.log("[requireAdmin] Starting check...");
   const user = await getAuthedUser(request);
-  if (!user) return null;
+  console.log("[requireAdmin] User:", user?.email);
+  if (!user) {
+    console.log("[requireAdmin] No user - returning null");
+    return null;
+  }
+  
   const adminEmail = (process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "").toLowerCase();
-  if (user.email?.toLowerCase() === adminEmail) return user;
+  console.log("[requireAdmin] Admin email env:", adminEmail);
+  console.log("[requireAdmin] User email:", user.email?.toLowerCase());
+  
+  if (user.email?.toLowerCase() === adminEmail) {
+    console.log("[requireAdmin] Admin email match!");
+    return user;
+  }
 
   const service = getServiceSupabase();
+  console.log("[requireAdmin] Checking profiles table for role...");
   const { data } = await service
     .from("profiles")
     .select("id")
@@ -38,5 +51,6 @@ export async function requireAdmin(request: NextRequest) {
     .eq("role", "both")
     .maybeSingle();
 
+  console.log("[requireAdmin] Profile result:", data);
   return data ? user : null;
 }

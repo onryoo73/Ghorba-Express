@@ -3,17 +3,22 @@ import { requireAdmin } from "@/lib/server/auth";
 import { getServiceSupabase } from "@/lib/server/supabase";
 
 export async function GET(request: NextRequest) {
-  const admin = await requireAdmin(request);
-  if (!admin) return NextResponse.json({ error: "Admin only" }, { status: 403 });
+  try {
+    const admin = await requireAdmin(request);
+    if (!admin) return NextResponse.json({ error: "Admin only" }, { status: 403 });
 
-  const supabase = getServiceSupabase();
-  const { data, error } = await supabase
-    .from("disputes")
-    .select("*")
-    .order("created_at", { ascending: false });
+    const supabase = getServiceSupabase();
+    const { data, error } = await supabase
+      .from("disputes")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ disputes: data });
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ disputes: data ?? [] });
+  } catch (err) {
+    console.error("[Admin Disputes] Error:", err);
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: NextRequest) {

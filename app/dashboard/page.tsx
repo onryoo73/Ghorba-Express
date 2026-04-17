@@ -134,7 +134,7 @@ export default function DashboardPage(): JSX.Element {
           const { data: recentOffers } = await supabase!
             .from("post_offers")
             .select(`
-              id, status, payment_status, delivery_status, created_at, amount_tnd,
+              id, buyer_id, offerer_id, status, payment_status, delivery_status, created_at, amount_tnd,
               traveler:profiles!traveler_id(full_name),
               buyer:profiles!buyer_id(full_name),
               post:posts!inner(item_name)
@@ -279,7 +279,7 @@ export default function DashboardPage(): JSX.Element {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            {getGreeting()}, {profile?.full_name?.split(" ")[0] || "User"}!
+            {getGreeting()}, <Link href={`/profile/${user?.id}`} className="hover:text-electricBlue transition-colors">{profile?.full_name?.split(" ")[0] || "User"}</Link>!
           </h1>
           <p className="text-muted">
             {getRoleLabel(role || "buyer")} • {isAdmin && "Admin • "}
