@@ -1,17 +1,14 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { locales, type Locale } from "@/i18n";
+import { useI18n, type Locale } from "@/lib/i18n/client";
 import { Globe } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
+const locales: Locale[] = ["en", "fr"];
+
 export function LanguageSwitcher() {
-  const t = useTranslations();
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { locale, setLocale } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -27,14 +24,7 @@ export function LanguageSwitcher() {
   }, []);
 
   const switchLocale = (newLocale: Locale) => {
-    if (newLocale === locale) {
-      setIsOpen(false);
-      return;
-    }
-
-    // Replace current locale in pathname with new one
-    const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`) || `/${newLocale}`;
-    router.push(newPathname as any);
+    setLocale(newLocale);
     setIsOpen(false);
   };
 

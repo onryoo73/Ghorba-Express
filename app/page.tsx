@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useI18n } from "@/lib/i18n/client";
 import { PostComposer } from "@/components/post-composer";
 import { FeedPost } from "@/components/feed-post";
 import { AppShell } from "@/components/app-shell";
@@ -16,7 +16,7 @@ import { useTrips } from "@/lib/hooks/use-trips";
 import Link from "next/link";
 
 export default function Page(): JSX.Element {
-  const t = useTranslations();
+  const { t } = useI18n();
   const { posts, loading, error, refresh } = usePosts({ status: "active", limit: 20 });
   const { trips, loading: tripsLoading } = useTrips({ status: "open", limit: 5 });
   const [filter, setFilter] = useState<"all" | "request" | "trip">("all");
