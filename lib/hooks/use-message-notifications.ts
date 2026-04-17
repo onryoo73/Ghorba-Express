@@ -25,6 +25,7 @@ export function useMessageNotifications(
         },
         async (payload) => {
           const message = payload.new as any;
+          if (!supabase) return;
           
           // Check if this message is for the current user (they're in the thread)
           const { data: thread } = await supabase

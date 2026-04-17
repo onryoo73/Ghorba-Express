@@ -10,6 +10,7 @@ export function useUnreadMessageCount(userId: string | undefined) {
     if (!userId || !supabase) return;
 
     const fetchUnread = async () => {
+      if (!supabase) return;
       // Get all threads where user is a participant
       const { data: threads } = await supabase
         .from("chat_threads")
@@ -44,6 +45,7 @@ export function useUnreadMessageCount(userId: string | undefined) {
         schema: "public",
         table: "chat_messages"
       }, async (payload) => {
+        if (!supabase) return;
         const msg = payload.new as any;
         
         // Check if this message is for current user

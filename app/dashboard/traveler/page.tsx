@@ -402,8 +402,7 @@ export default function TravelerDashboardPage(): JSX.Element {
                         {trip.status === "open" && (
                           <Button
                             variant="secondary"
-                            size="sm"
-                            className="mt-3 w-full"
+                            className="mt-3 w-full h-8 text-xs"
                             onClick={() => void closeTrip(trip.id)}
                           >
                             <X className="h-4 w-4 mr-2" />
@@ -514,18 +513,16 @@ export default function TravelerDashboardPage(): JSX.Element {
                             <div className="flex gap-2">
                               <Button
                                 variant="secondary"
-                                size="sm"
                                 onClick={() => setActiveChatOrderId(order.id)}
-                                className="gap-2"
+                                className="gap-2 h-8 text-xs"
                               >
                                 <MessageSquare className="h-4 w-4" />
                                 Chat
                               </Button>
                               {order.status === "accepted" && (
                                 <Button 
-                                  size="sm" 
                                   onClick={() => void markInTransit(order.id)}
-                                  className="bg-emerald-500"
+                                  className="bg-emerald-500 h-8 text-xs"
                                 >
                                   Start Delivery
                                 </Button>

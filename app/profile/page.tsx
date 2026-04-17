@@ -71,7 +71,9 @@ export default function ProfilePage(): JSX.Element {
     setSaving(true);
     setMessage(null);
     
-    try {
+try {
+      if (!supabase) throw new Error("Supabase not configured");
+      
       const { error } = await supabase
         .from("profiles")
         .update({
@@ -96,7 +98,7 @@ export default function ProfilePage(): JSX.Element {
   };
 
   const handleAvatarUpload = async (file: File) => {
-    if (!user) return;
+    if (!user || !supabase) return;
     
     setLoading(true);
     try {
@@ -467,6 +469,7 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
     setLoading(true);
     
     try {
+      if (!supabase) throw new Error("Supabase not configured");
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
