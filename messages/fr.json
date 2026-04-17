@@ -1,0 +1,169 @@
+{
+  "metadata": {
+    "title": "Ghorba Express | Livraison Crowdsourcing P2P",
+    "description": "Livraison moderne par escrow pour la Tunisie et au-delà."
+  },
+  "nav": {
+    "home": "Accueil",
+    "trips": "Voyages",
+    "wallet": "Portefeuille",
+    "orders": "Commandes",
+    "dashboard": "Tableau de Bord",
+    "admin": "Panneau Admin",
+    "profile": "Profil",
+    "login": "Connexion / Inscription",
+    "logout": "Déconnexion",
+    "authenticated": "Connecté",
+    "guest": "Invité"
+  },
+  "home": {
+    "hero": {
+      "title": "Ghorba Express",
+      "subtitle": "Livraison Crowdsourcing P2P",
+      "description": "Envoyez des colis avec des voyageurs vérifiés. Escrow sécurisé, suivi en direct et prix justes.",
+      "cta": "Commencer"
+    },
+    "filters": {
+      "title": "Filtres Rapides",
+      "all": "Tous les Posts",
+      "requests": "Demandes Acheteurs",
+      "trips": "Voyages Voyageurs"
+    },
+    "upcomingTrips": "Voyages à Venir",
+    "viewAll": "Voir tout",
+    "feed": {
+      "title": "Derniers Posts",
+      "loading": "Chargement...",
+      "error": "Échec du chargement",
+      "empty": "Aucun post. Soyez le premier !"
+    },
+    "howItWorks": {
+      "title": "Comment Ça Marche",
+      "step1": {
+        "title": "Poster ou Parcourir",
+        "description": "Créez une demande ou trouvez un voyageur"
+      },
+      "step2": {
+        "title": "Connecter & Accepter",
+        "description": "Discutez et confirmez les détails"
+      },
+      "step3": {
+        "title": "Paiement Sécurisé",
+        "description": "Payez en toute sécurité via notre escrow"
+      },
+      "step4": {
+        "title": "Suivre & Recevoir",
+        "description": "Suivez votre colis jusqu'à la livraison"
+      }
+    },
+    "features": {
+      "escrow": {
+        "title": "Escrow Sécurisé",
+        "description": "Votre paiement est conservé en sécurité jusqu'à confirmation de livraison."
+      },
+      "verified": {
+        "title": "Voyageurs Vérifiés",
+        "description": "Tous les voyageurs sont vérifiés et notés par la communauté."
+      },
+      "pricing": {
+        "title": "Tarifs Équitables",
+        "description": "Tarifs compétitifs basés sur le poids et la destination."
+      }
+    }
+  },
+  "auth": {
+    "title": "Bienvenue sur Ghorba Express",
+    "subtitle": "Connectez-vous ou créez un compte pour commencer",
+    "email": "Email",
+    "password": "Mot de passe",
+    "fullName": "Nom complet",
+    "phone": "Téléphone",
+    "city": "Ville",
+    "role": {
+      "title": "Je veux...",
+      "buyer": "Envoyer des colis",
+      "traveler": "Livrer des colis",
+      "both": "Les deux"
+    },
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "createAccount": "Créer un compte",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "forgotPassword": "Mot de passe oublié ?",
+    "orContinueWith": "Ou continuer avec"
+  },
+  "dashboard": {
+    "title": "Tableau de Bord",
+    "buyerView": "Vue Acheteur",
+    "travelerView": "Vue Voyageur",
+    "adminView": "Administration"
+  },
+  "wallet": {
+    "title": "Portefeuille",
+    "availableBalance": "Solde Disponible",
+    "lockedBalance": "Solde En Attente / Bloqué",
+    "withdraw": "Retirer les Fonds",
+    "transactions": "Transactions Récentes",
+    "noTransactions": "Aucune transaction",
+    "lockedInfo": "Vos fonds bloqués sont protégés jusqu'à confirmation de livraison."
+  },
+  "orders": {
+    "title": "Mes Commandes",
+    "noOrders": "Vous n'avez pas encore de commandes.",
+    "createOrder": "Créez votre première commande pour commencer.",
+    "status": {
+      "pending": "En attente",
+      "accepted": "Acceptée",
+      "inTransit": "En transit",
+      "completed": "Terminée",
+      "cancelled": "Annulée"
+    }
+  },
+  "trips": {
+    "title": "Mes Voyages",
+    "noTrips": "Vous n'avez pas encore posté de voyages.",
+    "createTrip": "Postez un voyage pour commencer à gagner."
+  },
+  "admin": {
+    "title": "Tableau de Bord Admin",
+    "orders": "Commandes",
+    "disputes": "Litiges",
+    "paymentProofs": "Preuves de Paiement",
+    "users": "Utilisateurs",
+    "platformFees": "Frais Plateforme Collectés",
+    "travelerEarnings": "Payé aux Voyageurs",
+    "totalVolume": "Volume Total",
+    "showReleased": "Afficher libérés",
+    "actions": {
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "release": "Libérer Paiement",
+      "refund": "Rembourser"
+    },
+    "status": {
+      "buyerPending": "Paiement Acheteur En Attente",
+      "buyerApproved": "Paiement Acheteur Approuvé",
+      "travelerInfo": "Infos Voyageur Requises",
+      "readyRelease": "Prêt à Libérer",
+      "released": "Libéré"
+    }
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Envoyer",
+    "refresh": "Actualiser",
+    "notifications": "Notifications",
+    "noNotifications": "Aucune notification"
+  }
+}

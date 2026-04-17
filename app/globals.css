@@ -2,23 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+@layer base {
+  :root {
+    /* Light theme (default) */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark theme (current design) */
+    --background: 222 47% 7%;
+    --foreground: 222 100% 95%;
+    --card: 216 38% 11%;
+    --card-foreground: 216 100% 92%;
+    --popover: 216 38% 11%;
+    --popover-foreground: 216 100% 92%;
+    --primary: 217 100% 58%;
+    --primary-foreground: 222 100% 95%;
+    --secondary: 216 38% 16%;
+    --secondary-foreground: 216 100% 92%;
+    --muted: 220 20% 55%;
+    --muted-foreground: 220 20% 55%;
+    --accent: 216 38% 16%;
+    --accent-foreground: 216 100% 92%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 216 38% 20%;
+    --input: 216 38% 20%;
+    --ring: 217 100% 58%;
+  }
 }
 
-* {
-  border-color: rgba(164, 191, 255, 0.16);
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", system-ui, sans-serif;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+/* Dark theme body styling */
+.dark body {
   background:
     radial-gradient(circle at top right, rgba(47, 204, 154, 0.2), transparent 36%),
     radial-gradient(circle at top left, rgba(43, 127, 255, 0.28), transparent 38%),
-    #0b1019;
-  color: #e5eeff;
-  font-family: "Inter", system-ui, sans-serif;
+    hsl(var(--background));
+  background-attachment: fixed;
+}
+
+/* Light theme body styling */
+body:not(.dark) {
+  background:
+    radial-gradient(circle at top right, rgba(47, 204, 154, 0.08), transparent 36%),
+    radial-gradient(circle at top left, rgba(43, 127, 255, 0.12), transparent 38%),
+    hsl(var(--background));
   background-attachment: fixed;
 }
 

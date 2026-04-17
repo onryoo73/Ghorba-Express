@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { PostComposer } from "@/components/post-composer";
 import { FeedPost } from "@/components/feed-post";
 import { AppShell } from "@/components/app-shell";
@@ -15,12 +16,13 @@ import { useTrips } from "@/lib/hooks/use-trips";
 import Link from "next/link";
 
 export default function Page(): JSX.Element {
+  const t = useTranslations();
   const { posts, loading, error, refresh } = usePosts({ status: "active", limit: 20 });
   const { trips, loading: tripsLoading } = useTrips({ status: "open", limit: 5 });
   const [filter, setFilter] = useState<"all" | "request" | "trip">("all");
-  
-  const filteredPosts = filter === "all" 
-    ? posts 
+
+  const filteredPosts = filter === "all"
+    ? posts
     : posts.filter(p => p.type === filter);
 
   return (
@@ -35,14 +37,14 @@ export default function Page(): JSX.Element {
         <Card className="p-6 bg-gradient-to-r from-electricBlue/20 to-emerald/20 border-electricBlue/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold mb-1">Need something from abroad?</h2>
-              <p className="text-sm text-muted">Or traveling soon and want to earn? Connect with travelers & buyers.</p>
+              <h2 className="text-xl font-bold mb-1">{t('home.hero.title')}</h2>
+              <p className="text-sm text-muted">{t('home.hero.description')}</p>
             </div>
             <div className="flex gap-3">
               <Link href="/trips">
                 <Button variant="secondary" className="gap-2">
                   <Plane className="h-4 w-4" />
-                  Browse Trips
+                  {t('nav.trips')}
                 </Button>
               </Link>
               <Link href="/dashboard/traveler">
@@ -61,43 +63,43 @@ export default function Page(): JSX.Element {
         {/* Left Sidebar - Desktop Only */}
         <div className="hidden lg:block lg:col-span-3 space-y-4">
           <Card className="p-4 sticky top-4">
-            <h3 className="font-semibold mb-3">Quick Filters</h3>
+            <h3 className="font-semibold mb-3">{t('home.filters.title')}</h3>
             <div className="space-y-2">
-              <button 
+              <button
                 onClick={() => setFilter("all")}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 ${
                   filter === "all" ? "bg-white/10" : "hover:bg-white/10"
                 }`}
               >
                 <TrendingUp className="h-4 w-4 text-electricBlue" />
-                All Posts
+                {t('home.filters.all')}
               </button>
-              <button 
+              <button
                 onClick={() => setFilter("request")}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 ${
                   filter === "request" ? "bg-white/10" : "hover:bg-white/10"
                 }`}
               >
                 <Package className="h-4 w-4 text-rose-300" />
-                Buyer Requests
+                {t('home.filters.requests')}
               </button>
-              <button 
+              <button
                 onClick={() => setFilter("trip")}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 ${
                   filter === "trip" ? "bg-white/10" : "hover:bg-white/10"
                 }`}
               >
                 <Plane className="h-4 w-4 text-emerald" />
-                Traveler Trips
+                {t('home.filters.trips')}
               </button>
             </div>
           </Card>
 
           <Card className="p-4 sticky top-48">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-sm">Upcoming Trips</h3>
+              <h3 className="font-semibold text-sm">{t('home.upcomingTrips')}</h3>
               <Link href="/trips" className="text-xs text-electricBlue hover:underline">
-                View all
+                {t('home.viewAll')}
               </Link>
             </div>
             {tripsLoading ? (
@@ -137,23 +139,22 @@ export default function Page(): JSX.Element {
               <Loader2 className="h-8 w-8 animate-spin text-electricBlue" />
             </div>
           )}
-          
+
           {error && (
             <div className="text-center py-8 text-rose-300">
-              Failed to load posts. Please try again.
+              {t('home.feed.error')}
             </div>
           )}
-          
+
           {!loading && !error && posts.length === 0 && (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
                 <Package className="h-8 w-8 text-muted" />
               </div>
-              <p className="text-muted">No posts yet</p>
-              <p className="text-sm text-muted mt-1">Be the first to post a request or trip!</p>
+              <p className="text-muted">{t('home.feed.empty')}</p>
             </div>
           )}
-          
+
           <div className="space-y-4">
             {filteredPosts.map((post) => (
               <FeedPost key={post.id} post={post} />
@@ -162,12 +163,12 @@ export default function Page(): JSX.Element {
 
           {filteredPosts.length === 0 && !loading && filter !== "all" && (
             <div className="text-center py-8 text-muted">
-              <p>No {filter === "request" ? "buyer requests" : "traveler trips"} found.</p>
-              <button 
+              <p>{filter === "request" ? t('home.filters.requests') : t('home.filters.trips')} not found.</p>
+              <button
                 onClick={() => setFilter("all")}
                 className="text-electricBlue hover:underline text-sm mt-2"
               >
-                Show all posts
+                {t('home.filters.all')}
               </button>
             </div>
           )}
@@ -176,15 +177,15 @@ export default function Page(): JSX.Element {
         {/* Right Sidebar - Desktop Only */}
         <div className="hidden lg:block lg:col-span-3 space-y-4">
           <Card className="p-4 sticky top-4">
-            <h3 className="font-semibold mb-3">How It Works</h3>
+            <h3 className="font-semibold mb-3">{t('home.howItWorks.title')}</h3>
             <div className="space-y-4">
               <div className="flex gap-3">
                 <div className="h-8 w-8 rounded-full bg-electricBlue/20 flex items-center justify-center text-sm font-bold text-electricBlue shrink-0">
                   1
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Post or Browse</p>
-                  <p className="text-xs text-muted">Create a request or find a traveler</p>
+                  <p className="text-sm font-medium">{t('home.howItWorks.step1.title')}</p>
+                  <p className="text-xs text-muted">{t('home.howItWorks.step1.description')}</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -192,8 +193,8 @@ export default function Page(): JSX.Element {
                   2
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Connect & Agree</p>
-                  <p className="text-xs text-muted">Chat and negotiate the price</p>
+                  <p className="text-sm font-medium">{t('home.howItWorks.step2.title')}</p>
+                  <p className="text-xs text-muted">{t('home.howItWorks.step2.description')}</p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -201,8 +202,8 @@ export default function Page(): JSX.Element {
                   3
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Pay & Deliver</p>
-                  <p className="text-xs text-muted">Secure payment, track delivery</p>
+                  <p className="text-sm font-medium">{t('home.howItWorks.step3.title')}</p>
+                  <p className="text-xs text-muted">{t('home.howItWorks.step3.description')}</p>
                 </div>
               </div>
             </div>

@@ -6,6 +6,8 @@ import type { Route } from "next";
 import { PackageCheck, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -148,7 +150,13 @@ export function AppHeader({
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+          
           {/* Notification Bell */}
           {isAuthenticated && !isAdmin && (
             <div ref={notifRef} className="relative">

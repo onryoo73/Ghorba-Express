@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,17 @@ export default function RootLayout({
   children
 }: Readonly<{ children: ReactNode }>): JSX.Element {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -1,0 +1,169 @@
+{
+  "metadata": {
+    "title": "Ghorba Express | P2P Crowdsourced Shipping",
+    "description": "Modern escrow-first crowdsourced shipping for Tunisia and beyond."
+  },
+  "nav": {
+    "home": "Home",
+    "trips": "Trips",
+    "wallet": "Wallet",
+    "orders": "Orders",
+    "dashboard": "Dashboard",
+    "admin": "Admin Panel",
+    "profile": "Profile",
+    "login": "Log in / Sign up",
+    "logout": "Log out",
+    "authenticated": "Authenticated",
+    "guest": "Guest"
+  },
+  "home": {
+    "hero": {
+      "title": "Ghorba Express",
+      "subtitle": "P2P Crowdsourced Shipping",
+      "description": "Send packages with verified travelers. Secure escrow, live tracking, and fair prices.",
+      "cta": "Get Started"
+    },
+    "filters": {
+      "title": "Quick Filters",
+      "all": "All Posts",
+      "requests": "Buyer Requests",
+      "trips": "Traveler Trips"
+    },
+    "upcomingTrips": "Upcoming Trips",
+    "viewAll": "View all",
+    "feed": {
+      "title": "Latest Posts",
+      "loading": "Loading posts...",
+      "error": "Failed to load posts",
+      "empty": "No posts yet. Be the first to post!"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Post or Browse",
+        "description": "Create a request or find a traveler"
+      },
+      "step2": {
+        "title": "Connect & Agree",
+        "description": "Chat and confirm the details"
+      },
+      "step3": {
+        "title": "Secure Payment",
+        "description": "Pay safely via our escrow"
+      },
+      "step4": {
+        "title": "Track & Receive",
+        "description": "Follow your package until delivery"
+      }
+    },
+    "features": {
+      "escrow": {
+        "title": "Secure Escrow",
+        "description": "Your payment is held safely until delivery is confirmed."
+      },
+      "verified": {
+        "title": "Verified Travelers",
+        "description": "All travelers are ID verified and rated by the community."
+      },
+      "pricing": {
+        "title": "Fair Pricing",
+        "description": "Competitive rates based on weight and destination."
+      }
+    }
+  },
+  "auth": {
+    "title": "Welcome to Ghorba Express",
+    "subtitle": "Sign in or create an account to get started",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "city": "City",
+    "role": {
+      "title": "I want to...",
+      "buyer": "Send packages",
+      "traveler": "Deliver packages",
+      "both": "Both"
+    },
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "forgotPassword": "Forgot password?",
+    "orContinueWith": "Or continue with"
+  },
+  "dashboard": {
+    "title": "Dashboard Hub",
+    "buyerView": "Buyer View",
+    "travelerView": "Traveler View",
+    "adminView": "Administration"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "availableBalance": "Available Balance",
+    "lockedBalance": "Pending / Locked Balance",
+    "withdraw": "Withdraw Available Funds",
+    "transactions": "Recent Transactions",
+    "noTransactions": "No transactions yet",
+    "lockedInfo": "Your locked funds stay protected until delivery confirmation is complete."
+  },
+  "orders": {
+    "title": "My Orders",
+    "noOrders": "You don't have any orders yet.",
+    "createOrder": "Create your first order to get started.",
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "inTransit": "In Transit",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "trips": {
+    "title": "My Trips",
+    "noTrips": "You haven't posted any trips yet.",
+    "createTrip": "Post a trip to start earning."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "orders": "Orders",
+    "disputes": "Disputes",
+    "paymentProofs": "Payment Proofs",
+    "users": "Users",
+    "platformFees": "Platform Fees Collected",
+    "travelerEarnings": "Paid to Travelers",
+    "totalVolume": "Total Volume",
+    "showReleased": "Show released",
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "release": "Release Payment",
+      "refund": "Refund"
+    },
+    "status": {
+      "buyerPending": "Buyer Payment Pending",
+      "buyerApproved": "Buyer Payment Approved",
+      "travelerInfo": "Traveler Info Needed",
+      "readyRelease": "Ready to Release",
+      "released": "Released"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "refresh": "Refresh",
+    "notifications": "Notifications",
+    "noNotifications": "No notifications"
+  }
+}
