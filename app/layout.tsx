@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { I18nProvider } from "@/lib/i18n/client";
-
-export const dynamic = "force-dynamic";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Ghorba Express | P2P Crowdsourced Shipping",
   description: "Modern escrow-first crowdsourced shipping for Tunisia and beyond."
 };
+
+export const dynamic = "force-dynamic";
 
 export default function RootLayout({
   children
@@ -17,16 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <I18nProvider>
-            {children}
-          </I18nProvider>
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
