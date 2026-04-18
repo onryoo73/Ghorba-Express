@@ -73,12 +73,13 @@ export default function DashboardPage(): JSX.Element {
           .select("status")
           .eq("traveler_id", user.id);
 
-        // Load unread messages
+        // Load unread messages from notifications
         const { count: unreadCount } = await supabase!
-          .from("chat_messages")
+          .from("notifications")
           .select("*", { count: "exact" })
           .eq("recipient_id", user.id)
-          .eq("is_read", false);
+          .eq("is_read", false)
+          .eq("type", "message");
 
         // Calculate stats
         const activeOrders = ordersData?.filter(o => 
@@ -141,7 +142,7 @@ export default function DashboardPage(): JSX.Element {
               buyer:profiles!buyer_id(full_name),
               post:posts!inner(item_name)
             `)
-            .or(`buyer_id.eq.${user.id},offerer_id.eq.${user.id}`)
+            .or(`buyer_id.eq.${user.id},traveler_id.eq.${user.id}`)
             .order("created_at", { ascending: false })
             .limit(5);
 

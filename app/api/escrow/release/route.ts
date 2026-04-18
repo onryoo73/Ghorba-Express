@@ -69,17 +69,6 @@ export async function POST(request: NextRequest) {
       console.error("Wallet update error:", err);
     }
     
-    // Create payment record
-    await supabase.from("payments").insert({
-      offer_id: offerId,
-      traveler_id: offer.traveler_id,
-      amount_tnd: agreedAmount,
-      platform_fee_tnd: offer.platform_fee_tnd || 0,
-      traveler_earnings_tnd: travelerEarnings,
-      status: "captured",
-      captured_at: new Date().toISOString()
-    });
-    
     // Get traveler payment method for notification
     const { data: offerWithPayment } = await supabase
       .from("post_offers")

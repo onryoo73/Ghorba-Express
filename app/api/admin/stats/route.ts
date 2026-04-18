@@ -9,50 +9,31 @@ export async function GET(request: NextRequest) {
   const supabase = getServiceSupabase();
 
   try {
-    // Get total platform fees collected
-    const { data: feeTransactions, error: feeError } = await supabase
+    // Get total platform fees collected from captured offers
+    const { data: capturedOffers, error: offersError } = await supabase
+      .from("post_offers")
+      .select("amount_tnd, platform_fee_tnd")
+      .eq("payment_status", "captured");
+
+    if (offersError) throw offersError;
+
+    const totalFees = capturedOffers.reduce((sum, o) => sum + (Number(o.platform_fee_tnd) || 0), 0);
+    const totalVolume = capturedOffers.reduce((sum, o) => sum + (Number(o.amount_tnd) || 0), 0);
+    const totalTravelerEarnings = totalVolume - totalFees;
+
+    // Get recent platform fee transactions from wallet_transactions
+    // Note: We'll fallback to showing recent captured offers if wallet_transactions doesn't have platform_fee type yet
+    const { data: recentTransactions, error: recentError } = await supabase
       .from("wallet_transactions")
-      .select("amount")
-      .eq("type", "platform_fee");
-
-    if (feeError) throw feeError;
-
-    const totalFees = feeTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-
-    // Get total payments released to travelers
-    const { data: earningTransactions, error: earningError } = await supabase
-      .from("wallet_transactions")
-      .select("amount")
-      .eq("type", "earning");
-
-    if (earningError) throw earningError;
-
-    const totalTravelerEarnings = earningTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-
-    // Get total gross volume
-    const { data: payments, error: paymentsError } = await supabase
-      .from("payments")
-      .select("amount_tnd");
-
-    if (paymentsError) throw paymentsError;
-
-    const totalVolume = payments.reduce((sum, p) => sum + (Number(p.amount_tnd) || 0), 0);
-
-    // Get recent platform fee transactions
-    const { data: recentFees, error: recentError } = await supabase
-      .from("wallet_transactions")
-      .select("*, offer:post_offers(buyer:profiles(full_name), traveler:profiles(full_name))")
-      .eq("type", "platform_fee")
+      .select("*, offer:post_offers(buyer:profiles!buyer_id(full_name), traveler:profiles!traveler_id(full_name))")
       .order("created_at", { ascending: false })
       .limit(10);
-
-    if (recentError) throw recentError;
 
     return NextResponse.json({
       totalFees,
       totalTravelerEarnings,
       totalVolume,
-      recentFees: recentFees || []
+      recentFees: recentTransactions || []
     });
 
   } catch (error) {
