@@ -406,8 +406,7 @@ export default function TravelerDashboardPage(): JSX.Element {
                         {trip.status === "open" && (
                           <Button 
                             variant="ghost" 
-                            size="sm" 
-                            className="w-full mt-3 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 h-8"
+                            className="w-full mt-3 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 h-8 px-2"
                             onClick={() => void closeTrip(trip.id)}
                           >
                             {t('common.cancel')}

@@ -265,17 +265,17 @@ export default function BuyerDashboardPage(): JSX.Element {
 
                         <div className="flex gap-2">
                           {offer.status === "accepted" && offer.payment_status === "pending" && (
-                            <Button className="bg-emerald hover:bg-emerald/80 gap-1 h-8 text-xs" onClick={() => setActivePaymentOffer(offer)}>
+                            <Button className="bg-emerald hover:bg-emerald/80 gap-1 h-8 text-xs px-2" onClick={() => setActivePaymentOffer(offer)}>
                               <Wallet className="h-3 w-3" />{t('wallet.title')}
                             </Button>
                           )}
                           {offer.delivery_status === "delivered" && (
-                            <Button className="bg-electricBlue hover:bg-electricBlue/80 gap-1 h-8 text-xs" onClick={() => setActiveOtpOffer(offer)}>
+                            <Button className="bg-electricBlue hover:bg-electricBlue/80 gap-1 h-8 text-xs px-2" onClick={() => setActiveOtpOffer(offer)}>
                               <Shield className="h-3 w-3" />{t('common.confirm')}
                             </Button>
                           )}
                           {offer.status !== "pending" && (
-                            <Button variant="secondary" onClick={() => setActiveChatOfferId(offer.id)} className="gap-1 h-8 text-xs">
+                            <Button variant="secondary" onClick={() => setActiveChatOfferId(offer.id)} className="gap-1 h-8 text-xs px-2">
                               <MessageSquare className="h-3 w-3" />{t('dashboard.quickActions.viewMessages')}
                             </Button>
                           )}
