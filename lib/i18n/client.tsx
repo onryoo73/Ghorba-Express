@@ -54,10 +54,6 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     [locale]
   );
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   return (
     <I18nContext.Provider value={{ locale, setLocale, t }}>
       {children}
