@@ -85,9 +85,9 @@ export function ReviewModal({
           className="w-full max-w-md"
         >
           <Card className="overflow-hidden border-electricBlue/20">
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center justify-between p-4 border-b border-divider">
               <h2 className="text-lg font-semibold">Rate your experience</h2>
-              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg">
+              <button onClick={onClose} className="p-2 hover:bg-surface rounded-lg">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -114,7 +114,7 @@ export function ReviewModal({
                         "h-8 w-8 transition-colors",
                         (hoveredRating || rating) >= star
                           ? "fill-yellow-400 text-yellow-400"
-                          : "text-white/20"
+                          : "text-muted/20"
                       )}
                     />
                   </button>
@@ -131,7 +131,7 @@ export function ReviewModal({
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Share your feedback..."
-                  className="w-full min-h-[100px] bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50 resize-none"
+                  className="w-full min-h-[100px] bg-surface border border-border rounded-xl p-3 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50 resize-none"
                 />
               </div>
 

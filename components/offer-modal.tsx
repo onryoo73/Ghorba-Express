@@ -126,11 +126,11 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
               {step === "offer" ? (
                 <>
                   {/* Header */}
-                  <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                  <div className="p-4 border-b border-divider flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${isRequest ? "bg-rose-400/20" : "bg-emerald/20"}`}>
+                      <div className={`p-2 rounded-lg ${isRequest ? "bg-rose-100 dark:bg-rose-400/20" : "bg-emerald/20"}`}>
                         {isRequest ? (
-                          <ShoppingBag className="h-5 w-5 text-rose-300" />
+                          <ShoppingBag className="h-5 w-5 text-rose-600 dark:text-rose-300" />
                         ) : (
                           <Plane className="h-5 w-5 text-emerald" />
                         )}
@@ -146,14 +146,14 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
                     </div>
                     <button
                       onClick={onClose}
-                      className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                      className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
 
                   {/* Post Preview */}
-                  <div className="p-4 bg-white/5">
+                  <div className="p-4 bg-surface/50">
                     <p className="text-sm line-clamp-2">{post.content}</p>
                     <div className="flex gap-2 mt-2 text-xs text-muted">
                       {post.origin && <span>{post.origin}</span>}
@@ -177,7 +177,7 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
                           ? "Hi! I can bring this for you. I'm traveling on [date]. Let's discuss the details!"
                           : "Hi! I'd like you to bring this item for me. What's your price?"
                         }
-                        className="w-full bg-white/5 rounded-xl px-3 py-2 text-sm min-h-[100px] resize-none outline-none focus:ring-1 focus:ring-electricBlue/50"
+                        className="w-full bg-surface rounded-xl px-3 py-2 text-sm min-h-[100px] resize-none outline-none focus:ring-1 focus:ring-electricBlue/50 border border-border"
                       />
                     </div>
 
@@ -194,7 +194,7 @@ export function OfferModal({ post, isOpen, onClose, onSuccess }: OfferModalProps
                   </div>
 
                   {/* Actions */}
-                  <div className="p-4 border-t border-white/10 flex gap-2">
+                  <div className="p-4 border-t border-divider flex gap-2">
                     <Button variant="secondary" onClick={onClose} className="flex-1">
                       Cancel
                     </Button>

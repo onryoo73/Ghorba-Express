@@ -77,7 +77,7 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "fixed bottom-0 left-0 top-0 z-20 hidden border-r border-white/10 bg-[#0f1726]/90 backdrop-blur-xl lg:block",
+        "fixed bottom-0 left-0 top-0 z-20 hidden border-r border-divider bg-surface-overlay/95 backdrop-blur-xl lg:block",
         isOpen ? "w-64" : "w-20"
       )}
     >
@@ -96,7 +96,7 @@ export function DashboardSidebar({
           <Link
             href={`/profile/${userId}`}
             className={cn(
-              "mb-4 flex items-center rounded-xl p-2 transition hover:bg-white/5",
+              "mb-4 flex items-center rounded-xl p-2 transition hover:bg-surface-hover",
               isOpen ? "gap-3" : "justify-center"
             )}
           >
@@ -126,7 +126,7 @@ export function DashboardSidebar({
                 href={link.href as any}
                 className={cn(
                   "flex items-center rounded-xl px-3 py-2 text-sm transition",
-                  active ? "bg-electricBlue text-white" : "text-muted hover:bg-white/5 hover:text-foreground",
+                  active ? "bg-electricBlue text-white" : "text-muted hover:bg-surface hover:text-foreground",
                   isOpen ? "gap-2" : "justify-center"
                 )}
                 title={link.label}

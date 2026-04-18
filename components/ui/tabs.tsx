@@ -19,7 +19,7 @@ export function Tabs({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 rounded-2xl border border-white/15 bg-white/5 p-1",
+        "grid grid-cols-2 rounded-2xl border border-border bg-surface p-1",
         className
       )}
     >
@@ -34,7 +34,7 @@ export function Tabs({
             className={cn(
               "rounded-xl px-3 py-2 text-sm font-medium transition",
               active
-                ? "bg-electricBlue text-white shadow-glow"
+                ? "bg-electricBlue text-white shadow-glow-light dark:shadow-glow"
                 : "text-muted hover:text-foreground"
             )}
           >

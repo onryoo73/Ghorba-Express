@@ -43,11 +43,11 @@ export function TripCard({ trip }: TripCardProps): JSX.Element {
     : `${daysRemaining} days left`;
   
   const statusColor = {
-    open: "bg-emerald-500/20 text-emerald",
-    full: "bg-amber-500/20 text-amber-400",
-    completed: "bg-blue-500/20 text-blue-400",
-    cancelled: "bg-rose-500/20 text-rose-400"
-  }[trip.status] || "bg-gray-500/20 text-gray-400";
+    open: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald",
+    full: "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400",
+    completed: "bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400",
+    cancelled: "bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400"
+  }[trip.status] || "bg-gray-100 dark:bg-gray-500/20 text-gray-500 dark:text-gray-400";
 
   const formattedDate = new Date(trip.departure_date).toLocaleDateString("en-US", {
     weekday: "short",
@@ -115,7 +115,7 @@ export function TripCard({ trip }: TripCardProps): JSX.Element {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-        <Card className="p-5 hover:border-white/20 transition-colors">
+        <Card className="p-5 hover:border-surface-hover transition-colors">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <Link href={`/profile/${trip.traveler_id}`} className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald to-electricBlue flex items-center justify-center text-white font-semibold hover:ring-2 hover:ring-emerald/50 transition-all">
@@ -173,7 +173,7 @@ export function TripCard({ trip }: TripCardProps): JSX.Element {
             {/* Days remaining badge */}
             {trip.status === "open" && daysRemaining >= 0 && (
               <div className={`flex items-center gap-2 text-sm font-medium ${
-                daysRemaining <= 1 ? "text-rose-300" : daysRemaining <= 3 ? "text-amber-400" : "text-emerald"
+                daysRemaining <= 1 ? "text-rose-600 dark:text-rose-300" : daysRemaining <= 3 ? "text-amber-600 dark:text-amber-400" : "text-emerald"
               }`}>
                 <Clock className="h-4 w-4" />
                 <span>{daysText}</span>
@@ -182,14 +182,14 @@ export function TripCard({ trip }: TripCardProps): JSX.Element {
           </div>
 
           {trip.notes && (
-            <p className="text-sm text-muted mb-4 border-t border-white/10 pt-4">
+            <p className="text-sm text-muted mb-4 border-t border-divider pt-4">
               {trip.notes}
             </p>
           )}
 
           {/* Contact button */}
           {!isOwnTrip && trip.status === "open" && daysRemaining >= 0 && (
-            <div className="flex justify-end pt-2 border-t border-white/10 mt-4">
+            <div className="flex justify-end pt-2 border-t border-divider mt-4">
               <Button 
                 onClick={handleContact} 
                 disabled={contacting}

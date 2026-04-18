@@ -192,7 +192,7 @@ export default function UserProfilePage(): JSX.Element {
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12 mb-4">
               {/* Avatar */}
               <div className="relative">
-                <div className="w-24 h-24 rounded-full border-4 border-background overflow-hidden bg-white/10">
+                <div className="w-24 h-24 rounded-full border-4 border-background overflow-hidden bg-surface">
                   {profile.avatar_url ? (
                     <img
                       src={profile.avatar_url}
@@ -200,7 +200,7 @@ export default function UserProfilePage(): JSX.Element {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-white/10 text-3xl">
+                    <div className="w-full h-full flex items-center justify-center bg-surface text-3xl">
                       {profile.full_name?.charAt(0) || "?"}
                     </div>
                   )}
@@ -339,7 +339,7 @@ export default function UserProfilePage(): JSX.Element {
               posts.map((post) => (
                 <Card key={post.id} className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center shrink-0">
                       {profile.avatar_url ? (
                         <img
                           src={profile.avatar_url}
@@ -379,26 +379,26 @@ export default function UserProfilePage(): JSX.Element {
             <h3 className="font-semibold">About</h3>
             
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b border-white/10">
+              <div className="flex justify-between py-2 border-b border-divider">
                 <span className="text-muted">Role</span>
                 <span className="capitalize">{profile.role}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-white/10">
+              <div className="flex justify-between py-2 border-b border-divider">
                 <span className="text-muted">Location</span>
                 <span>{profile.city || "Not set"}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-white/10">
+              <div className="flex justify-between py-2 border-b border-divider">
                 <span className="text-muted">Rating</span>
                 <span className="flex items-center gap-1">
                   <Star className="h-3 w-3 fill-amber text-amber" />
                   {profile.rating.toFixed(1)}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-white/10">
+              <div className="flex justify-between py-2 border-b border-divider">
                 <span className="text-muted">Deliveries</span>
                 <span>{profile.total_deliveries}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-white/10">
+              <div className="flex justify-between py-2 border-b border-divider">
                 <span className="text-muted">Member Since</span>
                 <span>{new Date(profile.created_at).toLocaleDateString()}</span>
               </div>

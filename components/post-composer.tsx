@@ -158,19 +158,19 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
               </Link>
               <button
                 onClick={() => setIsExpanded(true)}
-                className="flex-1 text-left px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-muted text-sm"
+                className="flex-1 text-left px-4 py-2.5 rounded-full bg-surface hover:bg-surface-hover transition-colors text-muted text-sm"
               >
                 What's on your mind?
               </button>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-divider">
               <div className="flex gap-1">
                 <button
                   onClick={() => {
                     setPostType("request");
                     setIsExpanded(true);
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors text-sm text-rose-300"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-surface-hover transition-colors text-sm text-rose-600 dark:text-rose-300"
                 >
                   <ShoppingBag className="h-4 w-4" />
                   <span className="hidden sm:inline">I need something</span>
@@ -180,7 +180,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
                     setPostType("trip");
                     setIsExpanded(true);
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors text-sm text-emerald"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-surface transition-colors text-sm text-emerald"
                 >
                   <Plane className="h-4 w-4" />
                   <span className="hidden sm:inline">I'm traveling</span>
@@ -191,7 +191,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
                   setIsExpanded(true);
                   fileInputRef.current?.click();
                 }}
-                className="p-2 rounded-lg hover:bg-white/5 transition-colors text-electricBlue"
+                className="p-2 rounded-lg hover:bg-surface transition-colors text-electricBlue"
               >
                 <ImagePlus className="h-5 w-5" />
               </button>
@@ -208,7 +208,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 {postType === "request" && (
-                  <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-400/20 text-rose-300 text-xs">
+                  <span className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-rose-100 dark:bg-rose-400/20 text-rose-600 dark:text-rose-300 text-xs">
                     <ShoppingBag className="h-3 w-3" />
                     Request
                   </span>
@@ -222,7 +222,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
               </div>
               <button
                 onClick={handleClose}
-                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-surface transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -232,7 +232,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => setPostType("request")}
-                  className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border border-rose-400/30 bg-rose-400/10 hover:bg-rose-400/20 transition-colors text-rose-300"
+                  className="flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border border-rose-200 dark:border-rose-400/30 bg-rose-50 dark:bg-rose-400/10 hover:bg-rose-100 dark:hover:bg-rose-400/20 transition-colors text-rose-600 dark:text-rose-300"
                 >
                   <ShoppingBag className="h-5 w-5" />
                   <span>I need something</span>
@@ -257,7 +257,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
 
             {/* Error Message */}
             {uploadError && (
-              <div className="mb-3 p-3 rounded-lg bg-rose-500/20 border border-rose-500/30 text-rose-300 text-sm">
+              <div className="mb-3 p-3 rounded-lg bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-300 text-sm">
                 {uploadError}
               </div>
             )}
@@ -279,12 +279,12 @@ export function PostComposer({ onPostCreated }: PostComposerProps): JSX.Element 
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-3 border-t border-white/10">
+            <div className="flex items-center justify-between pt-3 border-t border-divider">
               <div className="flex gap-1">
                 <button 
                   onClick={() => fileInputRef.current?.click()}
                   disabled={selectedImages.length >= 4}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors text-electricBlue disabled:opacity-50"
+                  className="p-2 rounded-lg hover:bg-surface-hover transition-colors text-electricBlue disabled:opacity-50"
                 >
                   <ImagePlus className="h-5 w-5" />
                 </button>

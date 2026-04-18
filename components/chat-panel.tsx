@@ -116,13 +116,13 @@ export function ChatPanel({ orderId }: ChatPanelProps): JSX.Element {
         <h3 className="font-medium">Order Chat</h3>
       </div>
       {loading && <p className="text-sm text-muted">Preparing chat...</p>}
-      {error && <p className="text-sm text-red-300">{error}</p>}
-      <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-white/10 p-3">
+      {error && <p className="text-sm text-red-500 dark:text-red-300">{error}</p>}}
+      <div className="max-h-64 space-y-2 overflow-auto rounded-xl border border-border p-3">
         {messages.map((msg) => (
           <div
             key={msg.id}
             className={`rounded-xl p-2 text-sm ${
-              msg.sender_id === user?.id ? "bg-electricBlue/20" : "bg-white/5"
+              msg.sender_id === user?.id ? "bg-electricBlue/20" : "bg-surface"
             }`}
           >
             <p>{msg.message}</p>

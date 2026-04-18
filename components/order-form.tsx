@@ -40,8 +40,8 @@ export function OrderForm(): JSX.Element {
           Upload Proof of Payment (D17 / Flouci)
         </Button>
 
-        <div className="rounded-2xl border border-dashed border-white/30 bg-black/20 p-4 text-center">
-          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-white/10">
+        <div className="rounded-2xl border border-dashed border-border bg-surface p-4 text-center">
+          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-surface-hover">
             <QrCode className="h-7 w-7 text-electricBlue" />
           </div>
           <p className="text-sm font-medium">Delivery Confirmation QR</p>

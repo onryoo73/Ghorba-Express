@@ -39,7 +39,7 @@ export function MobileNav({ isAuthenticated }: { isAuthenticated: boolean }): JS
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-3 z-40 mx-auto w-[calc(100%-1.25rem)] max-w-md rounded-2xl border border-white/15 bg-black/40 p-1.5 backdrop-blur-xl lg:hidden">
+    <nav className="fixed inset-x-0 bottom-3 z-40 mx-auto w-[calc(100%-1.25rem)] max-w-md rounded-2xl border border-border bg-surface-overlay/95 p-1.5 backdrop-blur-xl shadow-glow-light dark:shadow-glow lg:hidden">
       <div className={cn("grid gap-1", filteredItems.length === 3 ? "grid-cols-3" : "grid-cols-5")}>
         {filteredItems.slice(0, 5).map((item) => {
           const Icon = item.icon;
@@ -50,7 +50,7 @@ export function MobileNav({ isAuthenticated }: { isAuthenticated: boolean }): JS
               href={item.href as any}
               className={cn(
                 "flex flex-col items-center justify-center rounded-xl py-2 text-[11px] transition relative",
-                active ? "bg-electricBlue text-white" : "text-muted"
+                active ? "bg-electricBlue text-white" : "text-muted hover:text-foreground"
               )}
             >
               <div className="relative">

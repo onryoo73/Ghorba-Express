@@ -144,7 +144,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
           <div className="flex items-center gap-3">
             <Link 
               href={`/profile/${post.author_id}`}
-              className="h-12 w-12 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-lg font-semibold border border-white/10 hover:ring-2 hover:ring-electricBlue/50 transition-all"
+              className="h-12 w-12 rounded-full bg-gradient-to-br from-electricBlue/30 to-emerald/30 flex items-center justify-center text-lg font-semibold border border-border hover:ring-2 hover:ring-electricBlue/50 transition-all"
             >
               {authorName.charAt(0)}
             </Link>
@@ -166,7 +166,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
                 <Badge
                   className={`text-xs px-1.5 py-0 ${
                     isRequest
-                      ? "bg-rose-400/20 text-rose-300 border-rose-400/30"
+                      ? "bg-rose-100 dark:bg-rose-400/20 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-400/30"
                       : "bg-emerald/20 text-emerald border-emerald/30"
                   }`}
                 >
@@ -179,7 +179,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
               </div>
             </div>
           </div>
-          <button className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+          <button className="p-2 rounded-lg hover:bg-surface-hover transition-colors">
             <MoreHorizontal className="h-5 w-5 text-muted" />
           </button>
         </div>
@@ -191,7 +191,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
 
         {/* Route & Details Card */}
         <div className="px-4 pb-3">
-          <div className="p-3 rounded-xl bg-white/5 space-y-2">
+          <div className="p-3 rounded-xl bg-surface space-y-2">
             {(from || to) && (
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-electricBlue" />
@@ -202,7 +202,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
             )}
             <div className="flex flex-wrap gap-2">
               {date && (
-                <Badge className="text-xs bg-white/10">
+                <Badge className="text-xs bg-surface">
                   <Calendar className="h-3 w-3 mr-1" />
                   {date}
                 </Badge>
@@ -217,7 +217,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
               )}
               {price && (
                 <Badge
-                  className="text-xs bg-rose-400/20 text-rose-300 border-rose-400/30"
+                  className="text-xs bg-rose-100 dark:bg-rose-400/20 text-rose-600 dark:text-rose-300 border-rose-200 dark:border-rose-400/30"
                 >
                   <ShoppingBag className="h-3 w-3 mr-1" />
                   Item: {price} TND
@@ -231,7 +231,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
                   {kg} kg available
                 </Badge>
               )}
-              <Badge className="text-xs bg-yellow-400/20 text-yellow-300 border-yellow-400/30">
+              <Badge className="text-xs bg-yellow-100 dark:bg-yellow-400/20 text-yellow-600 dark:text-yellow-300 border-yellow-200 dark:border-yellow-400/30">
                 <Star className="h-3 w-3 mr-1" />
                 {authorRating}
               </Badge>
@@ -242,7 +242,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
         {/* Images */}
         {images.length > 0 && (
           <div className="px-4 pb-3">
-            <div className="rounded-xl overflow-hidden aspect-video bg-white/5">
+            <div className="rounded-xl overflow-hidden aspect-video bg-surface">
               <img
                 src={images[0]}
                 alt="Post"
@@ -253,14 +253,14 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
         )}
 
         {/* Action Bar */}
-        <div className="px-4 py-3 border-t border-white/10">
+        <div className="px-4 py-3 border-t border-divider">
           <div className="flex items-center justify-between">
             <div className="flex gap-4">
               <button
                 onClick={handleToggleLike}
                 disabled={likeLoading}
                 className={`flex items-center gap-1.5 transition-colors ${
-                  liked ? "text-rose-400" : "text-muted hover:text-rose-400"
+                  liked ? "text-rose-500" : "text-muted hover:text-rose-500"
                 }`}
               >
                 <Heart className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
@@ -336,7 +336,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
           <motion.div
             initial={{ height: 0 }}
             animate={{ height: "auto" }}
-            className="border-t border-white/10 px-4 py-3"
+            className="border-t border-divider px-4 py-3"
           >
             {/* Existing comments */}
             {comments.length > 0 && (
@@ -363,7 +363,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
                         
                         {/* Nested replies */}
                         {replies.length > 0 && (
-                          <div className="mt-2 space-y-2 pl-3 border-l border-white/10">
+                          <div className="mt-2 space-y-2 pl-3 border-l border-divider">
                             {replies.map(reply => {
                               const replyAuthor = reply.author as { full_name: string } | undefined;
                               return (
@@ -389,7 +389,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
                               value={replyText}
                               onChange={(e) => setReplyText(e.target.value)}
                               placeholder="Write a reply..."
-                              className="flex-1 bg-white/5 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
+                              className="flex-1 bg-surface rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50 border border-border"
                               onKeyDown={(e) => e.key === "Enter" && handleAddReply(comment.id)}
                             />
                             <button
@@ -423,7 +423,7 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Write a comment..."
-                  className="flex-1 bg-white/5 rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
+                  className="flex-1 bg-surface rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50 border border-border"
                   onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                 />
                 <button

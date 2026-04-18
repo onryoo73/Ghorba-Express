@@ -134,7 +134,7 @@ export function DeliveryConfirmation({
         >
           <Card className="overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center justify-between p-4 border-b border-divider">
               <div className="flex items-center gap-2">
                 {mode === "generate" ? (
                   <Package className="h-5 w-5 text-electricBlue" />
@@ -147,7 +147,7 @@ export function DeliveryConfirmation({
               </div>
               <button
                 onClick={handleClose}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-surface rounded-lg transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -214,7 +214,7 @@ export function DeliveryConfirmation({
                         value={scanInput}
                         onChange={(e) => setScanInput(e.target.value)}
                         placeholder="Paste scanned QR code URL..."
-                        className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-electricBlue"
+                        className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-electricBlue"
                       />
                     </div>
 

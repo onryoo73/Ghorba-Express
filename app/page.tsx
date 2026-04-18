@@ -34,7 +34,7 @@ export default function Page(): JSX.Element {
         transition={{ duration: 0.4 }}
         className="mb-6"
       >
-        <Card className="p-6 bg-gradient-to-r from-electricBlue/20 to-emerald/20 border-electricBlue/30">
+        <Card className="p-6 bg-gradient-to-r from-electricBlue/10 to-emerald/10 border-electricBlue/20 dark:from-electricBlue/20 dark:to-emerald/20 dark:border-electricBlue/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold mb-1">{t('home.hero.title')}</h2>
@@ -68,7 +68,7 @@ export default function Page(): JSX.Element {
               <button
                 onClick={() => setFilter("all")}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-                  filter === "all" ? "bg-white/10" : "hover:bg-white/10"
+                  filter === "all" ? "bg-surface-hover" : "hover:bg-surface-hover"
                 }`}
               >
                 <TrendingUp className="h-4 w-4 text-electricBlue" />
@@ -77,7 +77,7 @@ export default function Page(): JSX.Element {
               <button
                 onClick={() => setFilter("request")}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-                  filter === "request" ? "bg-white/10" : "hover:bg-white/10"
+                  filter === "request" ? "bg-surface-hover" : "hover:bg-surface-hover"
                 }`}
               >
                 <Package className="h-4 w-4 text-rose-300" />
@@ -86,7 +86,7 @@ export default function Page(): JSX.Element {
               <button
                 onClick={() => setFilter("trip")}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm flex items-center gap-2 ${
-                  filter === "trip" ? "bg-white/10" : "hover:bg-white/10"
+                  filter === "trip" ? "bg-surface-hover" : "hover:bg-surface-hover"
                 }`}
               >
                 <Plane className="h-4 w-4 text-emerald" />
@@ -112,14 +112,14 @@ export default function Page(): JSX.Element {
               <div className="space-y-3">
                 {trips.slice(0, 4).map((trip) => (
                   <Link key={trip.id} href="/trips">
-                    <div className="flex justify-between items-center py-2 hover:bg-white/5 rounded-lg px-2 -mx-2 transition-colors cursor-pointer">
+                    <div className="flex justify-between items-center py-2 hover:bg-surface-hover rounded-lg px-2 -mx-2 transition-colors cursor-pointer">
                       <div>
                         <p className="text-sm font-medium">{trip.origin} → {trip.destination}</p>
                         <p className="text-xs text-muted">
                           {new Date(trip.departure_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </p>
                       </div>
-                      <span className="text-xs text-emerald">{trip.weight_available_kg}kg</span>
+                      <span className="text-xs text-emerald font-medium">{trip.weight_available_kg}kg</span>
                     </div>
                   </Link>
                 ))}
@@ -148,7 +148,7 @@ export default function Page(): JSX.Element {
 
           {!loading && !error && posts.length === 0 && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
                 <Package className="h-8 w-8 text-muted" />
               </div>
               <p className="text-muted">{t('home.feed.empty')}</p>
@@ -221,7 +221,7 @@ export default function Page(): JSX.Element {
               {["Electronics", "Cosmetics", "Fashion", "Books", "Toys"].map((tag) => (
                 <span
                   key={tag}
-                  className="px-2 py-1 rounded-full bg-white/10 text-xs hover:bg-white/20 cursor-pointer transition-colors"
+                  className="px-2 py-1 rounded-full bg-surface text-xs hover:bg-surface-hover cursor-pointer transition-colors"
                 >
                   #{tag}
                 </span>

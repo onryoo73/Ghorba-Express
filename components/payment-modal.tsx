@@ -257,14 +257,14 @@ export function PaymentModal({
         >
           <Card className="overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center justify-between p-4 border-b border-divider">
               <div className="flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-electricBlue" />
                 <h2 className="text-lg font-semibold">Payment</h2>
               </div>
               <button
                 onClick={handleClose}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-surface rounded-lg transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -293,11 +293,11 @@ export function PaymentModal({
               ) : (
                 <div className="space-y-6">
                   {/* Payment Method Selector */}
-                  <div className="flex p-1 bg-white/5 rounded-xl">
+                  <div className="flex p-1 bg-surface rounded-xl">
                     <button
                       onClick={() => setPaymentMethod("konnect")}
                       className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${
-                        paymentMethod === "konnect" ? "bg-electricBlue text-white shadow-lg" : "text-muted hover:bg-white/5"
+                        paymentMethod === "konnect" ? "bg-electricBlue text-white shadow-lg" : "text-muted hover:bg-surface-hover"
                       }`}
                     >
                       <Smartphone className="h-4 w-4" />
@@ -306,7 +306,7 @@ export function PaymentModal({
                     <button
                       onClick={() => setPaymentMethod("manual")}
                       className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${
-                        paymentMethod === "manual" ? "bg-electricBlue text-white shadow-lg" : "text-muted hover:bg-white/5"
+                        paymentMethod === "manual" ? "bg-electricBlue text-white shadow-lg" : "text-muted hover:bg-surface-hover"
                       }`}
                     >
                       <Landmark className="h-4 w-4" />
@@ -315,7 +315,7 @@ export function PaymentModal({
                   </div>
 
                   {/* Price Breakdown */}
-                  <div className="bg-white/5 rounded-xl p-4 space-y-3">
+                  <div className="bg-surface rounded-xl p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted">You agreed on</span>
                       <div className="flex items-center gap-2">
@@ -325,10 +325,10 @@ export function PaymentModal({
                               type="number"
                               value={editedAmount}
                               onChange={(e) => setEditedAmount(e.target.value)}
-                              className="w-20 px-2 py-1 rounded bg-white/10 text-right text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
+                              className="w-20 px-2 py-1 rounded bg-surface text-right text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
                               autoFocus
                             />
-                            <button onClick={handleSaveAmount} className="p-1 rounded hover:bg-white/10">
+                            <button onClick={handleSaveAmount} className="p-1 rounded hover:bg-surface">
                               <Check className="h-4 w-4 text-emerald" />
                             </button>
                           </div>
@@ -337,7 +337,7 @@ export function PaymentModal({
                             <span className="font-medium">{currentAmount.toFixed(2)} TND</span>
                             <button 
                               onClick={() => setIsEditingAmount(true)}
-                              className="p-1 rounded hover:bg-white/10"
+                              className="p-1 rounded hover:bg-surface"
                             >
                               <Edit2 className="h-3 w-3 text-muted" />
                             </button>
@@ -351,7 +351,7 @@ export function PaymentModal({
                       <span className="text-amber">+{fee.toFixed(2)} TND</span>
                     </div>
                     
-                    <div className="border-t border-white/10 pt-3 flex justify-between items-center">
+                    <div className="border-t border-divider pt-3 flex justify-between items-center">
                       <span className="font-semibold">Total to pay</span>
                       <span className="font-bold text-xl text-electricBlue">{total.toFixed(2)} TND</span>
                     </div>
@@ -412,7 +412,7 @@ export function PaymentModal({
                         <button
                           onClick={() => setManualProvider("d17")}
                           className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
-                            manualProvider === "d17" ? "bg-amber/10 border-amber/50" : "bg-white/5 border-white/10 hover:bg-white/10"
+                            manualProvider === "d17" ? "bg-amber/10 border-amber/50" : "bg-surface border-border hover:bg-surface-hover"
                           }`}
                         >
                           <div className="w-10 h-10 rounded-lg overflow-hidden bg-white mb-1 flex items-center justify-center">
@@ -424,7 +424,7 @@ export function PaymentModal({
                         <button
                           onClick={() => setManualProvider("flouci")}
                           className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
-                            manualProvider === "flouci" ? "bg-electricBlue/10 border-electricBlue/50" : "bg-white/5 border-white/10 hover:bg-white/10"
+                            manualProvider === "flouci" ? "bg-electricBlue/10 border-electricBlue/50" : "bg-surface border-border hover:bg-surface-hover"
                           }`}
                         >
                           <div className="w-10 h-10 rounded-lg overflow-hidden bg-white mb-1 flex items-center justify-center p-1">
@@ -438,7 +438,7 @@ export function PaymentModal({
                       <div className="space-y-3">
                         <div
                           onClick={() => fileInputRef.current?.click()}
-                          className="relative aspect-video rounded-xl border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden"
+                          className="relative aspect-video rounded-xl border-2 border-dashed border-border bg-surface hover:bg-surface-hover transition-colors flex flex-col items-center justify-center cursor-pointer overflow-hidden"
                         >
                           {screenshotPreview ? (
                             <img src={screenshotPreview} alt="Proof" className="w-full h-full object-cover" />
@@ -462,7 +462,7 @@ export function PaymentModal({
                           value={trxId}
                           onChange={(e) => setTrxId(e.target.value)}
                           placeholder="Enter Transaction ID"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
+                          className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm outline-none focus:ring-1 focus:ring-electricBlue/50"
                         />
                       </div>
 

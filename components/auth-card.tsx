@@ -144,7 +144,7 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
               <select
                 value={role}
                 onChange={(event) => setRole(event.target.value as UserRole)}
-                className="h-11 w-full rounded-2xl border border-white/15 bg-white/5 px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electricBlue"
+                className="h-11 w-full rounded-2xl border border-border bg-surface px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electricBlue"
               >
                 <option value="buyer">Buyer</option>
                 <option value="traveler">Traveler</option>
@@ -175,7 +175,7 @@ export function AuthCard({ onAuthenticated }: AuthCardProps): JSX.Element {
           minLength={6}
         />
 
-        {error && <p className="text-sm text-red-300">{error}</p>}
+        {error && <p className="text-sm text-red-500 dark:text-red-300">{error}</p>}
         {message && <p className="text-sm text-emerald">{message}</p>}
 
         <Button className="w-full gap-2" disabled={isLoading}>

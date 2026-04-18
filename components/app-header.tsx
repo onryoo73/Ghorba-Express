@@ -120,7 +120,7 @@ export function AppHeader({
   }
 
   return (
-    <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-white/15 bg-[#0f1726]/80 px-4 py-3 shadow-glow backdrop-blur-xl">
+    <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-border bg-surface-overlay/80 px-4 py-3 shadow-glow-light dark:shadow-glow backdrop-blur-xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electricBlue/20">
@@ -132,7 +132,7 @@ export function AppHeader({
           </div>
         </div>
 
-        <nav className="hidden items-center gap-1 rounded-xl border border-white/10 bg-black/20 p-1 lg:flex">
+        <nav className="hidden items-center gap-1 rounded-xl border border-border bg-surface p-1 lg:flex">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
@@ -162,7 +162,7 @@ export function AppHeader({
             <div ref={notifRef} className="relative">
               <button
                 onClick={() => { setShowNotifs(!showNotifs); if (!showNotifs) markAllRead(); }}
-                className="relative p-2 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all"
+                className="relative p-2 rounded-xl border border-border hover:bg-surface transition-all"
               >
                 <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
@@ -173,22 +173,22 @@ export function AppHeader({
               </button>
               
               {showNotifs && (
-                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border border-white/15 bg-[#0f1726]/95 backdrop-blur-xl shadow-2xl z-50">
-                  <div className="p-3 border-b border-white/10 flex justify-between items-center">
+                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border border-border bg-surface-overlay backdrop-blur-xl shadow-2xl z-50">
+                  <div className="p-3 border-b border-divider flex justify-between items-center">
                     <p className="text-sm font-medium">Notifications</p>
                     {unreadCount > 0 && (
-                      <Badge className="bg-red-500/20 text-red-400 text-[10px]">{unreadCount} new</Badge>
+                      <Badge className="bg-red-500/20 text-red-500 dark:text-red-400 text-[10px]">{unreadCount} new</Badge>
                     )}
                   </div>
                   
                   {notifications.length === 0 ? (
                     <p className="text-sm text-muted text-center py-8">No notifications</p>
                   ) : (
-                    <div className="divide-y divide-white/5">
+                    <div className="divide-y divide-divider">
                       {notifications.map((n) => (
                         <div
                           key={n.id}
-                          className={`p-3 text-sm ${!n.is_read ? "bg-electricBlue/5" : ""}`}
+                          className={`p-3 text-sm ${!n.is_read ? "bg-electricBlue/5 dark:bg-electricBlue/10" : ""}`}
                         >
                           <p className="font-medium text-xs">{n.title}</p>
                           {n.message && <p className="text-muted text-xs mt-0.5">{n.message}</p>}
@@ -205,19 +205,19 @@ export function AppHeader({
           <Badge
             className={
               isAuthenticated
-                ? "border-emerald/40 bg-emerald/20 text-emerald"
-                : "border-white/20 bg-white/10 text-muted"
+                ? "border-emerald/40 bg-emerald/20 text-emerald dark:text-emerald"
+                : "border-border bg-surface text-muted"
             }
           >
             {isAuthenticated ? "Authenticated" : "Guest"}
           </Badge>
           {isAuthenticated && role && (
-            <Badge className="border-white/20 bg-white/10 text-foreground">
+            <Badge className="border-border bg-surface text-foreground">
               {isAdmin ? "admin" : role === "both" ? `both (${effectiveRole})` : role}
             </Badge>
           )}
           {isAuthenticated && role === "both" && (
-            <div className="hidden rounded-xl border border-white/15 bg-black/20 p-1 sm:flex">
+            <div className="hidden rounded-xl border border-border bg-surface p-1 sm:flex">
               <button
                 type="button"
                 onClick={() => onModeChange("buyer")}

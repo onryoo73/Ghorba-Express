@@ -101,7 +101,7 @@ export default function OrdersPage(): JSX.Element {
     if (paymentStatus === "awaiting_verification") return "text-amber bg-amber/10 border-amber/20";
     if (paymentStatus === "authorized") return "text-electricBlue bg-electricBlue/10 border-electricBlue/20";
     if (status === "declined" || status === "cancelled") return "text-rose-400 bg-rose-400/10 border-rose-400/20";
-    return "text-muted bg-white/5 border-white/10";
+    return "text-muted bg-surface border-border";
   };
 
   const getStatusLabel = (status: string, paymentStatus: string, deliveryStatus: string) => {
@@ -118,7 +118,7 @@ export default function OrdersPage(): JSX.Element {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+          <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4">
             <ShieldCheck className="w-8 h-8 text-muted" />
           </div>
           <h1 className="text-xl font-semibold mb-2">Login to see your orders</h1>
@@ -162,7 +162,7 @@ export default function OrdersPage(): JSX.Element {
           </Card>
         ) : orders.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-muted" />
             </div>
             <h3 className="text-lg font-medium mb-1">No orders yet</h3>
@@ -179,7 +179,7 @@ export default function OrdersPage(): JSX.Element {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <Card className="p-5 hover:border-white/20 transition-colors group">
+                <Card className="p-5 hover:border-surface-hover transition-colors group">
                   <div className="flex flex-col sm:flex-row justify-between gap-4">
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-2">

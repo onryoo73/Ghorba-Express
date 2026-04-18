@@ -4,19 +4,19 @@
 
 @layer base {
   :root {
-    /* Light theme (default) */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light theme */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 47% 11%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 46%;
+    --muted-foreground: 220 14% 46%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
@@ -25,10 +25,15 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    /* Surface colors for light mode */
+    --surface: 0 0% 96%;
+    --surface-hover: 0 0% 93%;
+    --surface-overlay: 0 0% 100%;
+    --divider: 220 14% 90%;
   }
 
   .dark {
-    /* Dark theme (current design) */
+    /* Dark theme */
     --background: 222 47% 7%;
     --foreground: 222 100% 95%;
     --card: 216 38% 11%;
@@ -48,6 +53,11 @@
     --border: 216 38% 20%;
     --input: 216 38% 20%;
     --ring: 217 100% 58%;
+    /* Surface colors for dark mode */
+    --surface: 216 38% 14%;
+    --surface-hover: 216 38% 18%;
+    --surface-overlay: 222 47% 9%;
+    --divider: 216 38% 20%;
   }
 }
 
@@ -73,8 +83,8 @@
 /* Light theme body styling */
 body:not(.dark) {
   background:
-    radial-gradient(circle at top right, rgba(47, 204, 154, 0.08), transparent 36%),
-    radial-gradient(circle at top left, rgba(43, 127, 255, 0.12), transparent 38%),
+    radial-gradient(circle at top right, rgba(47, 204, 154, 0.06), transparent 36%),
+    radial-gradient(circle at top left, rgba(43, 127, 255, 0.06), transparent 38%),
     hsl(var(--background));
   background-attachment: fixed;
 }
@@ -82,4 +92,14 @@ body:not(.dark) {
 ::selection {
   background: rgba(43, 127, 255, 0.45);
   color: #f5f9ff;
+}
+
+.dark ::selection {
+  background: rgba(43, 127, 255, 0.45);
+  color: #f5f9ff;
+}
+
+body:not(.dark) ::selection {
+  background: rgba(43, 127, 255, 0.25);
+  color: hsl(var(--foreground));
 }

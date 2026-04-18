@@ -395,12 +395,12 @@ export default function MessagesPage(): JSX.Element {
           {/* Threads List */}
           <div className={`w-full lg:w-80 flex-shrink-0 ${showMobileChat ? "hidden lg:block" : ""}`}>
             <Card className="h-full flex flex-col">
-              <div className="p-4 border-b border-white/10">
+              <div className="p-4 border-b border-divider">
                 <h1 className="text-xl font-semibold flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" />
                   Messages
                   {threads.length > 0 && (
-                    <span className="ml-auto bg-white/10 px-2 py-0.5 rounded-full text-xs">{threads.length}</span>
+                    <span className="ml-auto bg-surface px-2 py-0.5 rounded-full text-xs">{threads.length}</span>
                   )}
                 </h1>
               </div>
@@ -415,7 +415,7 @@ export default function MessagesPage(): JSX.Element {
                     <p className="text-sm text-muted mt-1">Make an offer to start chatting!</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-divider">
                     {threads.map((thread) => {
                       const isBuyer = thread.buyer_id === user?.id;
                       const post = thread.post as Post;
@@ -427,8 +427,8 @@ export default function MessagesPage(): JSX.Element {
                             setSelectedThread(thread);
                             setShowMobileChat(true);
                           }}
-                          className={`w-full p-4 text-left transition-colors hover:bg-white/5 ${
-                            selectedThread?.id === thread.id ? "bg-white/10" : ""
+                          className={`w-full p-4 text-left transition-colors hover:bg-surface ${
+                            selectedThread?.id === thread.id ? "bg-surface-hover" : ""
                           }`}
                         >
                           <div className="flex items-start gap-3">
@@ -446,7 +446,7 @@ export default function MessagesPage(): JSX.Element {
                                 <Link href={`/profile/${thread.other_user?.id}`} className="font-medium truncate hover:text-electricBlue transition-colors">
                                   {thread.other_user?.full_name || "Unknown"}
                                 </Link>
-                                <span className="text-[10px] border border-white/20 px-1.5 py-0.5 rounded shrink-0">
+                                <span className="text-[10px] border border-border px-1.5 py-0.5 rounded shrink-0">
                                   {isBuyer ? "Traveler" : "Buyer"}
                                 </span>
                               </div>
@@ -474,10 +474,10 @@ export default function MessagesPage(): JSX.Element {
               {selectedThread ? (
                 <>
                   {/* Chat Header */}
-                  <div className="p-4 border-b border-white/10 flex items-center gap-3">
+                  <div className="p-4 border-b border-divider flex items-center gap-3">
                     <button
                       onClick={() => setShowMobileChat(false)}
-                      className="lg:hidden p-2 -ml-2 hover:bg-white/10 rounded-lg"
+                      className="lg:hidden p-2 -ml-2 hover:bg-surface rounded-lg"
                     >
                       <ArrowLeft className="h-5 w-5" />
                     </button>
@@ -496,7 +496,7 @@ export default function MessagesPage(): JSX.Element {
                         {selectedThread.status === "active" ? "Active conversation" : "Completed"}
                       </p>
                     </div>
-                    <button className="p-2 hover:bg-white/10 rounded-lg">
+                    <button className="p-2 hover:bg-surface rounded-lg">
                       <MoreVertical className="h-4 w-4" />
                     </button>
                   </div>
@@ -529,7 +529,7 @@ export default function MessagesPage(): JSX.Element {
                                 className={`px-4 py-2 rounded-2xl ${
                                   isMe
                                     ? "bg-electricBlue text-white rounded-br-md"
-                                    : "bg-white/10 rounded-bl-md"
+                                    : "bg-surface rounded-bl-md"
                                 }`}
                               >
                                 <p>{msg.message}</p>
@@ -548,7 +548,7 @@ export default function MessagesPage(): JSX.Element {
                   </div>
 
                   {/* Payment & Delivery Actions */}
-                  <div className="px-4 py-3 bg-white/5 border-y border-white/10">
+                  <div className="px-4 py-3 bg-surface border-y border-divider">
                     {/* STEP 0: Initial Offer - Post author needs to accept to start chat */}
                     {selectedThread.offer_status === "pending" && (
                       <>
@@ -633,7 +633,7 @@ export default function MessagesPage(): JSX.Element {
                                     } : null);
                                   }
                                 }}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-rose-400/20 text-rose-300 rounded-lg text-sm font-medium hover:bg-rose-400/30 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-400/20 text-rose-600 dark:text-rose-300 rounded-lg text-sm font-medium hover:bg-rose-100 dark:hover:bg-rose-400/30 transition-colors"
                               >
                                 <XCircle className="h-4 w-4" />
                                 Decline
@@ -667,7 +667,7 @@ export default function MessagesPage(): JSX.Element {
                                   placeholder="Enter agreed amount (TND)"
                                   value={agreedAmount}
                                   onChange={(e) => setAgreedAmount(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-electricBlue/50"
+                                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-electricBlue/50"
                                 />
                               </div>
                               <button
@@ -809,7 +809,7 @@ export default function MessagesPage(): JSX.Element {
                                     } : null);
                                   }
                                 }}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-rose-400/20 text-rose-300 rounded-lg text-sm font-medium hover:bg-rose-400/30 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-400/20 text-rose-600 dark:text-rose-300 rounded-lg text-sm font-medium hover:bg-rose-100 dark:hover:bg-rose-400/30 transition-colors"
                               >
                                 <XCircle className="h-4 w-4" />
                                 Decline
@@ -837,7 +837,7 @@ export default function MessagesPage(): JSX.Element {
                             {(() => {
                               const { fee, rate, total } = calculateTieredFee(selectedThread.proposed_price_tnd || 0);
                               return (
-                                <div className="bg-white/5 rounded-lg p-3 space-y-1">
+                                <div className="bg-surface rounded-lg p-3 space-y-1">
                                   <div className="flex justify-between text-sm">
                                     <span className="text-muted">Agreed amount</span>
                                     <span>{selectedThread.proposed_price_tnd?.toFixed(2)} TND</span>
@@ -846,7 +846,7 @@ export default function MessagesPage(): JSX.Element {
                                     <span className="text-muted">Platform fee ({rate}%)</span>
                                     <span className="text-amber">+{fee.toFixed(2)} TND</span>
                                   </div>
-                                  <div className="flex justify-between font-semibold border-t border-white/10 pt-1">
+                                  <div className="flex justify-between font-semibold border-t border-divider pt-1">
                                     <span>Total to pay</span>
                                     <span className="text-electricBlue">{total.toFixed(2)} TND</span>
                                   </div>
@@ -971,7 +971,7 @@ export default function MessagesPage(): JSX.Element {
                   </div>
 
                   {/* Input */}
-                  <div className="p-4 border-t border-white/10">
+                  <div className="p-4 border-t border-divider">
                     <div className="flex gap-2">
                       <Input
                         placeholder="Type a message..."

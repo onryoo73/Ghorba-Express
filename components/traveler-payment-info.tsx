@@ -100,7 +100,7 @@ export function TravelerPaymentInfo({
         >
           <Card className="overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center justify-between p-4 border-b border-divider">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-lg bg-emerald/20">
                   <Wallet className="h-5 w-5 text-emerald" />
@@ -112,7 +112,7 @@ export function TravelerPaymentInfo({
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-surface transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -135,7 +135,7 @@ export function TravelerPaymentInfo({
                       className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${
                         paymentMethod === "d17"
                           ? "border-emerald bg-emerald/10"
-                          : "border-white/10 hover:border-white/20"
+                          : "border-border hover:border-surface-hover"
                       }`}
                     >
                       <Smartphone className="h-6 w-6 text-emerald" />
@@ -146,7 +146,7 @@ export function TravelerPaymentInfo({
                       className={`p-3 rounded-xl border transition-all flex flex-col items-center gap-2 ${
                         paymentMethod === "flouci"
                           ? "border-electricBlue bg-electricBlue/10"
-                          : "border-white/10 hover:border-white/20"
+                          : "border-border hover:border-surface-hover"
                       }`}
                     >
                       <CreditCard className="h-6 w-6 text-electricBlue" />
@@ -171,7 +171,7 @@ export function TravelerPaymentInfo({
                         placeholder="+216 XX XXX XXX"
                         value={paymentNumber}
                         onChange={(e) => setPaymentNumber(e.target.value)}
-                        className="bg-white/5"
+                        className="bg-surface"
                       />
                       <p className="text-xs text-muted mt-1">
                         {paymentMethod === "d17" 
@@ -189,7 +189,7 @@ export function TravelerPaymentInfo({
                           placeholder="Name on your Flouci account"
                           value={paymentName}
                           onChange={(e) => setPaymentName(e.target.value)}
-                          className="bg-white/5"
+                          className="bg-surface"
                         />
                         <p className="text-xs text-muted mt-1">
                           This helps the admin verify they're sending to the correct account

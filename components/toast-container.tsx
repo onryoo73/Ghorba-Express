@@ -18,7 +18,7 @@ const icons = {
 
 const colors = {
   success: "bg-emerald/20 border-emerald/50 text-emerald",
-  error: "bg-rose-400/20 border-rose-400/50 text-rose-300",
+  error: "bg-rose-50 dark:bg-rose-400/20 border-rose-200 dark:border-rose-400/50 text-rose-600 dark:text-rose-300",
   info: "bg-electricBlue/20 border-electricBlue/50 text-electricBlue",
   warning: "bg-amber/20 border-amber/50 text-amber"
 };
@@ -47,7 +47,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps): JSX.
                 </div>
                 <button
                   onClick={() => onDismiss(toast.id)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors shrink-0"
+                  className="p-1 hover:bg-surface rounded-lg transition-colors shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </button>

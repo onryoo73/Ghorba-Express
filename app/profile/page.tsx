@@ -275,7 +275,7 @@ try {
                 </h3>
                 <button
                   onClick={() => setEditMode(!editMode)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-hover transition-colors text-sm"
                 >
                   {editMode ? <Save className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
                   {editMode ? "Done" : "Edit"}
@@ -293,7 +293,7 @@ try {
                       placeholder="Your full name"
                     />
                   ) : (
-                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center gap-3 p-3 bg-surface rounded-xl">
                       <User className="h-4 w-4 text-muted" />
                       <span>{formData.full_name || "Not set"}</span>
                     </div>
@@ -303,7 +303,7 @@ try {
                 {/* Email (read-only) */}
                 <div>
                   <label className="block text-sm text-muted mb-2">Email</label>
-                  <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl opacity-50">
+                  <div className="flex items-center gap-3 p-3 bg-surface rounded-xl opacity-50">
                     <Mail className="h-4 w-4 text-muted" />
                     <span>{user?.email}</span>
                   </div>
@@ -319,7 +319,7 @@ try {
                       placeholder="+216 XX XXX XXX"
                     />
                   ) : (
-                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center gap-3 p-3 bg-surface rounded-xl">
                       <Phone className="h-4 w-4 text-muted" />
                       <span>{formData.phone || "Not set"}</span>
                     </div>
@@ -336,7 +336,7 @@ try {
                       placeholder="Your city"
                     />
                   ) : (
-                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center gap-3 p-3 bg-surface rounded-xl">
                       <MapPin className="h-4 w-4 text-muted" />
                       <span>{formData.city || "Not set"}</span>
                     </div>
@@ -355,7 +355,7 @@ try {
                           className={`p-3 rounded-xl border transition-all ${
                             formData.role === role
                               ? "border-electricBlue bg-electricBlue/10"
-                              : "border-white/10 hover:border-white/30"
+                              : "border-border hover:border-surface-hover"
                           }`}
                         >
                           <Briefcase className={`h-5 w-5 mx-auto mb-2 ${
@@ -400,7 +400,7 @@ try {
               <div className="space-y-3">
                 <button
                   onClick={() => setShowPasswordModal(true)}
-                  className="w-full flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                  className="w-full flex items-center justify-between p-4 bg-surface rounded-xl hover:bg-surface-hover transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-electricBlue/20 rounded-lg">

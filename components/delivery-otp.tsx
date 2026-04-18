@@ -224,7 +224,7 @@ export function DeliveryOTP({
         >
           <Card className="overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center justify-between p-4 border-b border-divider">
               <div className="flex items-center gap-2">
                 {mode === "buyer" ? (
                   <Package className="h-5 w-5 text-electricBlue" />
@@ -237,7 +237,7 @@ export function DeliveryOTP({
               </div>
               <button
                 onClick={handleClose}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-surface rounded-lg transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -328,7 +328,7 @@ export function DeliveryOTP({
                           </span>
                           <button
                             onClick={() => setShowOtp(!showOtp)}
-                            className="p-1 hover:bg-white/10 rounded-lg transition-colors ml-2"
+                            className="p-1 hover:bg-surface rounded-lg transition-colors ml-2"
                           >
                             {showOtp ? (
                               <EyeOff className="h-5 w-5 text-muted" />
@@ -411,7 +411,7 @@ export function DeliveryOTP({
                           value={otpInput}
                           onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ""))}
                           placeholder="000000"
-                          className="w-full text-center text-2xl font-mono font-bold tracking-widest py-4 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald"
+                          className="w-full text-center text-2xl font-mono font-bold tracking-widest py-4 bg-surface border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald"
                         />
                       </div>
 

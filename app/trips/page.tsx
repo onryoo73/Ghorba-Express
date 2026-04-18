@@ -60,7 +60,7 @@ export default function TripsPage(): JSX.Element {
           {/* Search Bar */}
           <Card className="p-4">
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
+              <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-surface">
                 <MapPin className="h-4 w-4 text-electricBlue" />
                 <Input
                   placeholder="From (city)"
@@ -69,7 +69,7 @@ export default function TripsPage(): JSX.Element {
                   className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                 />
               </div>
-              <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5">
+              <div className="flex-1 flex items-center gap-2 px-4 py-2 rounded-xl bg-surface">
                 <MapPin className="h-4 w-4 text-emerald" />
                 <Input
                   placeholder="To (city)"
@@ -78,7 +78,7 @@ export default function TripsPage(): JSX.Element {
                   className="border-0 bg-transparent p-0 h-auto focus-visible:ring-0"
                 />
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 min-w-[140px]">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface min-w-[140px]">
                 <CalendarDays className="h-4 w-4 text-yellow-300" />
                 <Input
                   type="date"
@@ -125,7 +125,7 @@ export default function TripsPage(): JSX.Element {
 
           {/* Load More */}
           <div className="text-center py-4">
-            <button className="px-6 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm text-muted">
+            <button className="px-6 py-2 rounded-full bg-surface hover:bg-surface-hover transition-colors text-sm text-muted">
               Load more trips...
             </button>
           </div>
@@ -160,7 +160,7 @@ export default function TripsPage(): JSX.Element {
               {popularRoutes.map((route) => (
                 <div
                   key={`${route.from}-${route.to}`}
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-lg bg-surface hover:bg-surface-hover transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-electricBlue" />
@@ -183,7 +183,7 @@ export default function TripsPage(): JSX.Element {
             <div className="space-y-2">
               {["1-3 kg", "4-6 kg", "7-10 kg", "10+ kg"].map((range) => (
                 <label key={range} className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded border-white/20" />
+                  <input type="checkbox" className="rounded border-border" />
                   <span className="text-sm">{range}</span>
                 </label>
               ))}

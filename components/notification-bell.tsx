@@ -33,7 +33,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
     <div className={cn("relative", className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-lg p-2 text-muted hover:bg-white/10 hover:text-foreground transition-colors"
+        className="relative rounded-lg p-2 text-muted hover:bg-surface hover:text-foreground transition-colors"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -54,9 +54,9 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-hidden rounded-xl border border-white/15 bg-[#0f1726] shadow-xl z-50"
+              className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-hidden rounded-xl border border-border bg-surface-overlay shadow-xl z-50"
             >
-              <div className="flex items-center justify-between border-b border-white/10 p-3">
+              <div className="flex items-center justify-between border-b border-divider p-3">
                 <h3 className="font-semibold">Notifications</h3>
                 {unreadCount > 0 && (
                   <button
@@ -83,7 +83,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
                       className={cn(
-                        "w-full p-3 text-left hover:bg-white/5 transition-colors border-b border-white/5",
+                        "w-full p-3 text-left hover:bg-surface transition-colors border-b border-divider",
                         !notification.is_read && "bg-electricBlue/5"
                       )}
                     >
