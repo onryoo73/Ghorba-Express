@@ -213,7 +213,7 @@ export default function DashboardPage(): JSX.Element {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 border border-white/10 rounded-2xl p-4"
+      className="bg-surface border border-divider rounded-2xl p-4 shadow-sm dark:bg-white/5 dark:border-white/10 dark:shadow-none"
     >
       <div className="flex items-start justify-between">
         <div className={`p-2 rounded-xl ${color}`}>
@@ -246,9 +246,9 @@ export default function DashboardPage(): JSX.Element {
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className={`flex items-center gap-3 p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors ${color}`}
+        className={`flex items-center gap-3 p-4 rounded-2xl border border-divider bg-surface hover:bg-surface-hover dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors ${color}`}
       >
-        <div className="p-2 rounded-xl bg-white/10">
+        <div className="p-2 rounded-xl bg-surface-hover dark:bg-white/10">
           <Icon className="h-5 w-5" />
         </div>
         <span className="font-medium">{label}</span>
@@ -296,13 +296,13 @@ export default function DashboardPage(): JSX.Element {
                   icon={Package}
                   label="Active Orders"
                   value={stats.activeOrders}
-                  color="bg-blue-500/20 text-blue-400"
+                  color="bg-blue-500/20 text-blue-600 dark:text-blue-400"
                 />
                 <StatCard
                   icon={DollarSign}
                   label="Total Spent"
                   value={`${stats.totalSpent.toFixed(2)} TND`}
-                  color="bg-amber-500/20 text-amber-400"
+                  color="bg-amber-500/20 text-amber-600 dark:text-amber-400"
                 />
               </>
             )}
@@ -312,14 +312,14 @@ export default function DashboardPage(): JSX.Element {
                   icon={Truck}
                   label="Active Trips"
                   value={stats.activeTrips}
-                  color="bg-emerald-500/20 text-emerald-400"
+                  color="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                 />
                 <StatCard
                   icon={Wallet}
                   label="Total Earnings"
                   value={`${stats.totalEarnings.toFixed(2)} TND`}
                   trend={`${stats.deliveriesCount} deliveries`}
-                  color="bg-purple-500/20 text-purple-400"
+                  color="bg-purple-500/20 text-purple-600 dark:text-purple-400"
                 />
               </>
             )}
@@ -327,13 +327,13 @@ export default function DashboardPage(): JSX.Element {
               icon={CheckCircle2}
               label="Completed"
               value={stats.completedOrders}
-              color="bg-emerald-500/20 text-emerald-400"
+              color="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
             />
             <StatCard
               icon={MessageSquare}
               label="Unread Messages"
               value={stats.unreadMessages}
-              color="bg-rose-500/20 text-rose-400"
+              color="bg-rose-500/20 text-rose-600 dark:text-rose-400"
             />
           </div>
         )}
@@ -392,14 +392,14 @@ export default function DashboardPage(): JSX.Element {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1 }}
-                      className="flex items-start gap-4 p-4 bg-white/5 rounded-xl"
+                      className="flex items-start gap-4 p-4 bg-surface border border-divider dark:bg-white/5 dark:border-none rounded-xl"
                     >
                       <div className={cn(
                         "p-2 rounded-lg",
-                        activity.type === "order" && "bg-blue-500/20 text-blue-400",
-                        activity.type === "message" && "bg-electricBlue/20 text-electricBlue",
-                        activity.type === "trip" && "bg-emerald-500/20 text-emerald-400",
-                        activity.type === "payment" && "bg-amber-500/20 text-amber-400"
+                        activity.type === "order" && "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+                        activity.type === "message" && "bg-rose-500/20 text-rose-600 dark:text-rose-400",
+                        activity.type === "trip" && "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+                        activity.type === "payment" && "bg-amber-500/20 text-amber-600 dark:text-amber-400"
                       )}>
                         {activity.type === "order" && <Package className="h-4 w-4" />}
                         {activity.type === "message" && <MessageSquare className="h-4 w-4" />}
