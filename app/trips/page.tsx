@@ -79,7 +79,7 @@ export default function TripsPage(): JSX.Element {
                 />
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface min-w-[140px]">
-                <CalendarDays className="h-4 w-4 text-yellow-300" />
+                <CalendarDays className="h-4 w-4 text-amber-500 dark:text-yellow-300" />
                 <Input
                   type="date"
                   value={searchDate}
@@ -104,7 +104,7 @@ export default function TripsPage(): JSX.Element {
           )}
                     
           {error && (
-            <div className="text-center py-8 text-rose-300">
+            <div className="text-center py-8 text-rose-600 dark:text-rose-300">
               Failed to load trips. Please try again.
             </div>
           )}
@@ -177,7 +177,7 @@ export default function TripsPage(): JSX.Element {
           {/* Filter by Space */}
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-4">
-              <Package className="h-5 w-5 text-rose-300" />
+              <Package className="h-5 w-5 text-rose-600 dark:text-rose-300" />
               <h3 className="font-semibold">Luggage Space</h3>
             </div>
             <div className="space-y-2">

@@ -80,7 +80,7 @@ export default function Page(): JSX.Element {
                   filter === "request" ? "bg-surface-hover" : "hover:bg-surface-hover"
                 }`}
               >
-                <Package className="h-4 w-4 text-rose-300" />
+                <Package className="h-4 w-4 text-rose-600 dark:text-rose-300" />
                 {t('home.filters.requests')}
               </button>
               <button
@@ -141,7 +141,7 @@ export default function Page(): JSX.Element {
           )}
 
           {error && (
-            <div className="text-center py-8 text-rose-300">
+            <div className="text-center py-8 text-rose-600 dark:text-rose-300">
               {t('home.feed.error')}
             </div>
           )}
@@ -198,7 +198,7 @@ export default function Page(): JSX.Element {
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center text-sm font-bold text-purple-400 shrink-0">
+                <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center text-sm font-bold text-purple-600 dark:text-purple-400 shrink-0">
                   3
                 </div>
                 <div>
