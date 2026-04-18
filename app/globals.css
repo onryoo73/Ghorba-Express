@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Light theme */
-    --background: 0 0% 98%;
+    --background: 0 0% 97%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -15,21 +15,21 @@
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 220 14% 46%;
-    --muted-foreground: 220 14% 46%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 35%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214.3 31.8% 85%;
+    --input: 214.3 31.8% 85%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
     /* Surface colors for light mode */
-    --surface: 0 0% 96%;
-    --surface-hover: 0 0% 93%;
+    --surface: 0 0% 94%;
+    --surface-hover: 0 0% 90%;
     --surface-overlay: 0 0% 100%;
-    --divider: 220 14% 90%;
+    --divider: 214.3 31.8% 88%;
   }
 
   .dark {
@@ -45,7 +45,7 @@
     --secondary: 216 38% 16%;
     --secondary-foreground: 216 100% 92%;
     --muted: 220 20% 55%;
-    --muted-foreground: 220 20% 55%;
+    --muted-foreground: 220 20% 65%;
     --accent: 216 38% 16%;
     --accent-foreground: 216 100% 92%;
     --destructive: 0 84.2% 60.2%;
