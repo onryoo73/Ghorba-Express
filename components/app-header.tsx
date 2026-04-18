@@ -12,6 +12,7 @@ import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/client";
 
 interface Notification {
   id: string;
@@ -45,6 +46,7 @@ export function AppHeader({
   onSignOut
 }: AppHeaderProps): JSX.Element {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -105,32 +107,32 @@ export function AppHeader({
 
   if (isAuthenticated && isAdmin) {
     links = [
-      { href: "/dashboard/admin", label: "Admin Panel" },
-      { href: "/dashboard", label: "Hub" },
-      { href: "/profile", label: "Profile" }
+      { href: "/dashboard/admin", label: t('nav.admin') },
+      { href: "/dashboard", label: t('nav.dashboard') },
+      { href: "/profile", label: t('nav.profile') }
     ];
   } else {
     links = [
-      { href: "/", label: "Home" },
-      { href: "/trips", label: "Trips" },
-      { href: "/wallet", label: "Wallet" },
-      { href: "/orders", label: "Orders" },
-      { href: "/dashboard", label: "Dashboard" }
+      { href: "/", label: t('nav.home') },
+      { href: "/trips", label: t('nav.trips') },
+      { href: "/wallet", label: t('nav.wallet') },
+      { href: "/orders", label: t('nav.orders') },
+      { href: "/dashboard", label: t('nav.dashboard') }
     ];
   }
 
   return (
     <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-border bg-surface-overlay/80 px-4 py-3 shadow-glow-light dark:shadow-glow backdrop-blur-xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electricBlue/20">
             <PackageCheck className="h-5 w-5 text-electricBlue" />
           </div>
           <div>
             <p className="text-sm font-semibold">Ghorba Express</p>
-            <p className="text-xs text-muted">{isAdmin ? "Administration" : "Crowdsourced shipping"}</p>
+            <p className="text-xs text-muted">{isAdmin ? t('dashboard.adminView') : t('home.hero.subtitle')}</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="hidden items-center gap-1 rounded-xl border border-border bg-surface p-1 lg:flex">
           {links.map((link) => {
@@ -175,14 +177,14 @@ export function AppHeader({
               {showNotifs && (
                 <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border border-border bg-surface-overlay backdrop-blur-xl shadow-2xl z-50">
                   <div className="p-3 border-b border-divider flex justify-between items-center">
-                    <p className="text-sm font-medium">Notifications</p>
+                    <p className="text-sm font-medium">{t('common.notifications')}</p>
                     {unreadCount > 0 && (
-                      <Badge className="bg-red-500/20 text-red-500 dark:text-red-400 text-[10px]">{unreadCount} new</Badge>
+                      <Badge className="bg-red-500/20 text-red-500 dark:text-red-400 text-[10px]">{unreadCount} {t('profile.pending')}</Badge>
                     )}
                   </div>
                   
                   {notifications.length === 0 ? (
-                    <p className="text-sm text-muted text-center py-8">No notifications</p>
+                    <p className="text-sm text-muted text-center py-8">{t('common.noNotifications')}</p>
                   ) : (
                     <div className="divide-y divide-divider">
                       {notifications.map((n) => (
