@@ -97,7 +97,108 @@
     "title": "Dashboard Hub",
     "buyerView": "Buyer View",
     "travelerView": "Traveler View",
-    "adminView": "Administration"
+    "adminView": "Administration",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "stats": {
+      "activeOrders": "Active Orders",
+      "activeTrips": "Active Trips",
+      "totalSpent": "Total Spent",
+      "totalEarnings": "Total Earnings",
+      "unreadMessages": "Unread Messages",
+      "deliveries": "deliveries",
+      "rating": "Rating"
+    },
+    "quickActions": {
+      "postTrip": "Post a Trip",
+      "createOrder": "Create Order",
+      "viewMessages": "View Messages",
+      "browsePosts": "Browse Posts"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "viewAll": "View all",
+      "empty": "No recent activity",
+      "types": {
+        "order": "Order",
+        "trip": "Trip",
+        "message": "Message",
+        "payment": "Payment"
+      }
+    }
+  },
+  "travelerDashboard": {
+    "title": "Traveler Dashboard",
+    "subtitle": "Manage your trips and deliveries",
+    "postTrip": "Post Trip",
+    "cancel": "Cancel",
+    "stats": {
+      "totalEarnings": "Total Earnings",
+      "activeTrips": "Active Trips",
+      "completed": "Completed",
+      "pendingOrders": "Pending Orders"
+    },
+    "form": {
+      "title": "Post a New Trip",
+      "origin": "Origin City",
+      "originPlaceholder": "e.g. Tunis",
+      "destination": "Destination City",
+      "destinationPlaceholder": "e.g. Sfax",
+      "departureDate": "Departure Date",
+      "availableWeight": "Available Weight (KG)",
+      "weightPlaceholder": "e.g. 20",
+      "publish": "Publish Trip"
+    },
+    "myTrips": "My Trips",
+    "available": "available"
+  },
+  "buyerDashboard": {
+    "title": "Buyer Dashboard",
+    "subtitle": "Track your orders and deliveries",
+    "newRequest": "New Request",
+    "stats": {
+      "totalSpent": "Total Spent",
+      "activeOrders": "Active Orders",
+      "completedOrders": "Completed Orders",
+      "pendingOffers": "Pending Offers"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account and preferences",
+    "personalInfo": "Personal Information",
+    "security": "Security",
+    "stats": "Stats",
+    "edit": "Edit",
+    "done": "Done",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "city": "City",
+    "role": "Role",
+    "changePassword": "Change Password",
+    "updatePassword": "Update Password",
+    "logout": "Sign Out",
+    "logoutDescription": "Log out from all devices",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile",
+    "avatarSuccess": "Avatar updated!",
+    "avatarError": "Failed to upload avatar",
+    "passwordSuccess": "Password changed successfully!",
+    "passwordError": "Failed to change password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "rating": "Rating",
+    "deliveries": "Deliveries",
+    "verified": "Verified",
+    "yes": "Yes",
+    "pending": "Pending",
+    "notSet": "Not set"
   },
   "wallet": {
     "title": "Wallet",

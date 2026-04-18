@@ -24,6 +24,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthSession } from "@/lib/use-auth-session";
+import { useI18n } from "@/lib/i18n/client";
 import { supabase } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/supabase/types";
 
@@ -37,6 +38,7 @@ interface ProfileData {
 
 export default function ProfilePage(): JSX.Element {
   const { user, profile, signOut } = useAuthSession();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -87,10 +89,10 @@ try {
       
       if (error) throw error;
       
-      setMessage({ type: "success", text: "Profile updated successfully!" });
+      setMessage({ type: "success", text: t('profile.updateSuccess') });
       setEditMode(false);
     } catch (err) {
-      setMessage({ type: "error", text: "Failed to update profile" });
+      setMessage({ type: "error", text: t('profile.updateError') });
       console.error(err);
     } finally {
       setSaving(false);
@@ -127,9 +129,9 @@ try {
       if (updateError) throw updateError;
       
       setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
-      setMessage({ type: "success", text: "Avatar updated!" });
+      setMessage({ type: "success", text: t('profile.avatarSuccess') });
     } catch (err) {
-      setMessage({ type: "error", text: "Failed to upload avatar" });
+      setMessage({ type: "error", text: t('profile.avatarError') });
       console.error(err);
     } finally {
       setLoading(false);
@@ -151,9 +153,9 @@ try {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case "buyer": return "Buyer";
-      case "traveler": return "Traveler";
-      case "both": return "Buyer + Traveler";
+      case "buyer": return t('auth.role.buyer');
+      case "traveler": return t('auth.role.traveler');
+      case "both": return t('auth.role.both');
       default: return role;
     }
   };
@@ -163,8 +165,8 @@ try {
       <div className="container max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Profile</h1>
-          <p className="text-muted">Manage your account and preferences</p>
+          <h1 className="text-3xl font-bold mb-2">{t('profile.title')}</h1>
+          <p className="text-muted">{t('profile.subtitle')}</p>
         </div>
 
         {/* Message */}
@@ -218,7 +220,7 @@ try {
                 />
               </div>
               
-              <h2 className="text-xl font-semibold mb-1">{formData.full_name || "User"}</h2>
+              <h2 className="text-xl font-semibold mb-1">{formData.full_name || t('common.guest')}</h2>
               <p className="text-sm text-muted mb-3">{user?.email}</p>
               
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getRoleColor(formData.role)}`}>
@@ -230,33 +232,33 @@ try {
             <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Star className="h-4 w-4 text-amber" />
-                Stats
+                {t('profile.stats')}
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted">Rating</span>
+                  <span className="text-sm text-muted">{t('profile.rating')}</span>
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 text-amber fill-current" />
                     <span className="font-medium">{profile?.rating || 5.0}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted">Deliveries</span>
+                  <span className="text-sm text-muted">{t('profile.deliveries')}</span>
                   <div className="flex items-center gap-1">
                     <Package className="h-4 w-4 text-electricBlue" />
                     <span className="font-medium">{profile?.total_deliveries || 0}</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted">Verified</span>
+                  <span className="text-sm text-muted">{t('profile.verified')}</span>
                   <div className="flex items-center gap-1">
                     {profile?.verified ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-emerald" />
-                        <span className="text-emerald text-sm">Yes</span>
+                        <span className="text-emerald text-sm">{t('profile.yes')}</span>
                       </>
                     ) : (
-                      <span className="text-muted text-sm">Pending</span>
+                      <span className="text-muted text-sm">{t('profile.pending')}</span>
                     )}
                   </div>
                 </div>
@@ -271,38 +273,38 @@ try {
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-semibold flex items-center gap-2">
                   <User className="h-5 w-5 text-electricBlue" />
-                  Personal Information
+                  {t('profile.personalInfo')}
                 </h3>
                 <button
                   onClick={() => setEditMode(!editMode)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-hover transition-colors text-sm"
                 >
                   {editMode ? <Save className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
-                  {editMode ? "Done" : "Edit"}
+                  {editMode ? t('profile.done') : t('profile.edit')}
                 </button>
               </div>
 
               <div className="space-y-4">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-sm text-muted mb-2">Full Name</label>
+                  <label className="block text-sm text-muted mb-2">{t('profile.fullName')}</label>
                   {editMode ? (
                     <Input
                       value={formData.full_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                      placeholder="Your full name"
+                      placeholder={t('profile.fullName')}
                     />
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-surface rounded-xl">
                       <User className="h-4 w-4 text-muted" />
-                      <span>{formData.full_name || "Not set"}</span>
+                      <span>{formData.full_name || t('profile.notSet')}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Email (read-only) */}
                 <div>
-                  <label className="block text-sm text-muted mb-2">Email</label>
+                  <label className="block text-sm text-muted mb-2">{t('profile.email')}</label>
                   <div className="flex items-center gap-3 p-3 bg-surface rounded-xl opacity-50">
                     <Mail className="h-4 w-4 text-muted" />
                     <span>{user?.email}</span>
@@ -311,7 +313,7 @@ try {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-sm text-muted mb-2">Phone Number</label>
+                  <label className="block text-sm text-muted mb-2">{t('profile.phone')}</label>
                   {editMode ? (
                     <Input
                       value={formData.phone}
@@ -321,24 +323,24 @@ try {
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-surface rounded-xl">
                       <Phone className="h-4 w-4 text-muted" />
-                      <span>{formData.phone || "Not set"}</span>
+                      <span>{formData.phone || t('profile.notSet')}</span>
                     </div>
                   )}
                 </div>
 
                 {/* City */}
                 <div>
-                  <label className="block text-sm text-muted mb-2">City</label>
+                  <label className="block text-sm text-muted mb-2">{t('profile.city')}</label>
                   {editMode ? (
                     <Input
                       value={formData.city}
                       onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="Your city"
+                      placeholder={t('profile.city')}
                     />
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-surface rounded-xl">
                       <MapPin className="h-4 w-4 text-muted" />
-                      <span>{formData.city || "Not set"}</span>
+                      <span>{formData.city || t('profile.notSet')}</span>
                     </div>
                   )}
                 </div>
@@ -346,7 +348,7 @@ try {
                 {/* Role Selection */}
                 {editMode && (
                   <div>
-                    <label className="block text-sm text-muted mb-2">Role</label>
+                    <label className="block text-sm text-muted mb-2">{t('profile.role')}</label>
                     <div className="grid grid-cols-3 gap-3">
                       {(["buyer", "traveler", "both"] as UserRole[]).map((role) => (
                         <button
@@ -377,14 +379,14 @@ try {
                       className="flex-1 bg-electricBlue gap-2"
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                      Save Changes
+                      {t('profile.save')}
                     </Button>
                     <Button
                       onClick={() => setEditMode(false)}
                       variant="secondary"
                       className="flex-1"
                     >
-                      Cancel
+                      {t('profile.cancel')}
                     </Button>
                   </div>
                 )}
@@ -395,7 +397,7 @@ try {
             <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Shield className="h-5 w-5 text-electricBlue" />
-                Security
+                {t('profile.security')}
               </h3>
               <div className="space-y-3">
                 <button
@@ -407,8 +409,8 @@ try {
                       <Lock className="h-4 w-4 text-electricBlue" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium">Change Password</p>
-                      <p className="text-sm text-muted">Update your account password</p>
+                      <p className="font-medium">{t('profile.changePassword')}</p>
+                      <p className="text-sm text-muted">{t('profile.changePassword')}</p>
                     </div>
                   </div>
                 </button>
@@ -422,8 +424,8 @@ try {
                       <LogOut className="h-4 w-4 text-rose-400" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium text-rose-300">Sign Out</p>
-                      <p className="text-sm text-rose-300/70">Log out from all devices</p>
+                      <p className="font-medium text-rose-300">{t('profile.logout')}</p>
+                      <p className="text-sm text-rose-300/70">{t('profile.logoutDescription')}</p>
                     </div>
                   </div>
                 </button>
@@ -451,18 +453,19 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { t } = useI18n();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t('profile.passwordMismatch'));
       return;
     }
     
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t('profile.passwordTooShort'));
       return;
     }
 
@@ -479,7 +482,7 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
       setSuccess(true);
       setTimeout(() => onClose(), 2000);
     } catch (err: any) {
-      setError(err.message || "Failed to change password");
+      setError(err.message || t('profile.passwordError'));
     } finally {
       setLoading(false);
     }
@@ -493,12 +496,12 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
         className="w-full max-w-md"
       >
         <Card className="p-6">
-          <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+          <h3 className="text-xl font-semibold mb-4">{t('profile.changePassword')}</h3>
           
           {success ? (
             <div className="text-center py-4">
               <CheckCircle className="h-12 w-12 text-emerald mx-auto mb-3" />
-              <p className="text-emerald">Password changed successfully!</p>
+              <p className="text-emerald">{t('profile.passwordSuccess')}</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -509,23 +512,23 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
               )}
               
               <div>
-                <label className="block text-sm text-muted mb-2">New Password</label>
+                <label className="block text-sm text-muted mb-2">{t('profile.updatePassword')}</label>
                 <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
+                  placeholder={t('profile.updatePassword')}
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm text-muted mb-2">Confirm Password</label>
+                <label className="block text-sm text-muted mb-2">{t('profile.updatePassword')}</label>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
+                  placeholder={t('profile.updatePassword')}
                   required
                 />
               </div>
@@ -537,7 +540,7 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
                   className="flex-1 bg-electricBlue gap-2"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Update Password
+                  {t('profile.updatePassword')}
                 </Button>
                 <Button
                   type="button"
@@ -545,7 +548,7 @@ function PasswordChangeModal({ onClose }: { onClose: () => void }): JSX.Element 
                   variant="secondary"
                   className="flex-1"
                 >
-                  Cancel
+                  {t('profile.cancel')}
                 </Button>
               </div>
             </form>

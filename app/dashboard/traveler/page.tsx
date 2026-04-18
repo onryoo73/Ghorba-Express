@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { authedJsonFetch } from "@/lib/api-client";
 import { supabase } from "@/lib/supabase/client";
 import { useAuthSession } from "@/lib/use-auth-session";
+import { useI18n } from "@/lib/i18n/client";
 import { 
   Truck, 
   DollarSign, 
@@ -74,6 +75,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function TravelerDashboardPage(): JSX.Element {
   const { profile, user } = useAuthSession();
+  const { t } = useI18n();
   const [openOrders, setOpenOrders] = useState<OrderRow[]>([]);
   const [assignedOrders, setAssignedOrders] = useState<OrderRow[]>([]);
   const [trips, setTrips] = useState<TripRow[]>([]);
@@ -111,7 +113,7 @@ export default function TravelerDashboardPage(): JSX.Element {
       
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load traveler orders.");
+      setError(err instanceof Error ? err.message : t('common.error'));
     }
   };
 
@@ -147,7 +149,7 @@ export default function TravelerDashboardPage(): JSX.Element {
       data: { user }
     } = await supabase.auth.getUser();
     if (!user) {
-      setError("You must be logged in.");
+      setError(t('nav.login'));
       return;
     }
 
@@ -193,7 +195,7 @@ export default function TravelerDashboardPage(): JSX.Element {
       });
       await loadOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to accept order.");
+      setError(err instanceof Error ? err.message : t('common.error'));
     }
   };
 
@@ -205,7 +207,7 @@ export default function TravelerDashboardPage(): JSX.Element {
       });
       await loadOrders();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to mark in transit.");
+      setError(err instanceof Error ? err.message : t('common.error'));
     }
   };
 
@@ -240,14 +242,14 @@ export default function TravelerDashboardPage(): JSX.Element {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-1">Traveler Dashboard</h1>
-              <p className="text-muted">Manage your trips and deliveries</p>
+              <h1 className="text-3xl font-bold mb-1">{t('travelerDashboard.title')}</h1>
+              <p className="text-muted">{t('travelerDashboard.subtitle')}</p>
             </div>
             <Button 
               onClick={() => setShowTripForm(!showTripForm)}
               className="bg-emerald-500 hover:bg-emerald-600 gap-2"
             >
-              {showTripForm ? <><X className="h-4 w-4" /> Cancel</> : <><Plus className="h-4 w-4" /> Post Trip</>}
+              {showTripForm ? <><X className="h-4 w-4" /> {t('travelerDashboard.cancel')}</> : <><Plus className="h-4 w-4" /> {t('travelerDashboard.postTrip')}</>}
             </Button>
           </div>
 
@@ -256,26 +258,26 @@ export default function TravelerDashboardPage(): JSX.Element {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <StatCard
                 icon={DollarSign}
-                label="Total Earnings"
+                label={t('travelerDashboard.stats.totalEarnings')}
                 value={`${stats.totalEarnings.toFixed(2)} TND`}
                 color="bg-emerald-500/20 text-emerald-400"
               />
               <StatCard
                 icon={Truck}
-                label="Active Trips"
+                label={t('travelerDashboard.stats.activeTrips')}
                 value={stats.activeTrips}
                 color="bg-blue-500/20 text-blue-400"
               />
               <StatCard
                 icon={CheckCircle2}
-                label="Completed"
+                label={t('travelerDashboard.stats.completed')}
                 value={stats.completedDeliveries}
                 trend={`${stats.rating.toFixed(1)} ★`}
                 color="bg-purple-500/20 text-purple-400"
               />
               <StatCard
                 icon={Clock}
-                label="Pending Orders"
+                label={t('travelerDashboard.stats.pendingOrders')}
                 value={stats.pendingOrders}
                 color="bg-amber-500/20 text-amber-400"
               />
@@ -300,15 +302,15 @@ export default function TravelerDashboardPage(): JSX.Element {
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                   <Truck className="h-5 w-5 text-emerald-400" />
-                  Post a New Trip
+                  {t('travelerDashboard.form.title')}
                 </h2>
                 <form className="grid gap-4 sm:grid-cols-2" onSubmit={(event) => void createTrip(event)}>
                   <div>
-                    <label className="block text-sm text-muted mb-2">Origin City</label>
+                    <label className="block text-sm text-muted mb-2">{t('travelerDashboard.form.origin')}</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                       <Input
-                        placeholder="e.g. Tunis"
+                        placeholder={t('travelerDashboard.form.originPlaceholder')}
                         value={tripOrigin}
                         onChange={(event) => setTripOrigin(event.target.value)}
                         required
@@ -317,11 +319,11 @@ export default function TravelerDashboardPage(): JSX.Element {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-muted mb-2">Destination City</label>
+                    <label className="block text-sm text-muted mb-2">{t('travelerDashboard.form.destination')}</label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                       <Input
-                        placeholder="e.g. Sfax"
+                        placeholder={t('travelerDashboard.form.destinationPlaceholder')}
                         value={tripDestination}
                         onChange={(event) => setTripDestination(event.target.value)}
                         required
@@ -330,7 +332,7 @@ export default function TravelerDashboardPage(): JSX.Element {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-muted mb-2">Departure Date</label>
+                    <label className="block text-sm text-muted mb-2">{t('travelerDashboard.form.departureDate')}</label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                       <Input
@@ -343,11 +345,11 @@ export default function TravelerDashboardPage(): JSX.Element {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-muted mb-2">Available Weight (KG)</label>
+                    <label className="block text-sm text-muted mb-2">{t('travelerDashboard.form.availableWeight')}</label>
                     <div className="relative">
                       <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                       <Input
-                        placeholder="e.g. 20"
+                        placeholder={t('travelerDashboard.form.weightPlaceholder')}
                         type="number"
                         min="1"
                         value={tripWeight}
@@ -360,10 +362,10 @@ export default function TravelerDashboardPage(): JSX.Element {
                   <div className="sm:col-span-2 flex gap-3">
                     <Button type="submit" className="flex-1 bg-emerald-500 hover:bg-emerald-600">
                       <Plus className="h-4 w-4 mr-2" />
-                      Publish Trip
+                      {t('travelerDashboard.form.publish')}
                     </Button>
                     <Button type="button" variant="secondary" onClick={() => setShowTripForm(false)}>
-                      Cancel
+                      {t('travelerDashboard.cancel')}
                     </Button>
                   </div>
                 </form>
@@ -377,7 +379,7 @@ export default function TravelerDashboardPage(): JSX.Element {
               <Card className="p-6 h-full">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                   <Truck className="h-5 w-5 text-emerald-400" />
-                  My Trips
+                  {t('travelerDashboard.myTrips')}
                 </h2>
 
                 {trips.length > 0 ? (
@@ -398,28 +400,26 @@ export default function TravelerDashboardPage(): JSX.Element {
                           <MapPin className="h-4 w-4 text-muted" />
                           {trip.origin} → {trip.destination}
                         </p>
-                        <p className="text-sm text-muted mt-1">{trip.weight_available_kg} KG available</p>
+                        <p className="text-xs text-muted mt-1">
+                          {trip.weight_available_kg}kg {t('travelerDashboard.available')}
+                        </p>
                         {trip.status === "open" && (
-                          <Button
-                            variant="secondary"
-                            className="mt-3 w-full h-8 text-xs"
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full mt-3 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 h-8"
                             onClick={() => void closeTrip(trip.id)}
                           >
-                            <X className="h-4 w-4 mr-2" />
-                            Close Trip
+                            {t('common.cancel')}
                           </Button>
                         )}
                       </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Truck className="h-12 w-12 text-muted mx-auto mb-4" />
-                    <p className="text-muted mb-4">No trips posted yet</p>
-                    <Button onClick={() => setShowTripForm(true)} className="bg-emerald-500 gap-2">
-                      <Plus className="h-4 w-4" />
-                      Post Your First Trip
-                    </Button>
+                  <div className="text-center py-12">
+                    <Truck className="h-12 w-12 text-muted/30 mx-auto mb-4" />
+                    <p className="text-muted">{t('trips.noTrips')}</p>
                   </div>
                 )}
               </Card>

@@ -97,7 +97,108 @@
     "title": "Tableau de Bord",
     "buyerView": "Vue Acheteur",
     "travelerView": "Vue Voyageur",
-    "adminView": "Administration"
+    "adminView": "Administration",
+    "greeting": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir"
+    },
+    "stats": {
+      "activeOrders": "Commandes Actives",
+      "activeTrips": "Voyages Actifs",
+      "totalSpent": "Total Dépensé",
+      "totalEarnings": "Total Gagné",
+      "unreadMessages": "Messages Non Lus",
+      "deliveries": "livraisons",
+      "rating": "Note"
+    },
+    "quickActions": {
+      "postTrip": "Poster un Voyage",
+      "createOrder": "Créer une Commande",
+      "viewMessages": "Voir Messages",
+      "browsePosts": "Parcourir Posts"
+    },
+    "recentActivity": {
+      "title": "Activité Récente",
+      "viewAll": "Voir tout",
+      "empty": "Aucune activité récente",
+      "types": {
+        "order": "Commande",
+        "trip": "Voyage",
+        "message": "Message",
+        "payment": "Paiement"
+      }
+    }
+  },
+  "travelerDashboard": {
+    "title": "Tableau de Bord Voyageur",
+    "subtitle": "Gérez vos voyages et livraisons",
+    "postTrip": "Poster Voyage",
+    "cancel": "Annuler",
+    "stats": {
+      "totalEarnings": "Total Gains",
+      "activeTrips": "Voyages Actifs",
+      "completed": "Terminées",
+      "pendingOrders": "Commandes en Attente"
+    },
+    "form": {
+      "title": "Poster un Nouveau Voyage",
+      "origin": "Ville de Départ",
+      "originPlaceholder": "ex: Tunis",
+      "destination": "Ville d'Arrivée",
+      "destinationPlaceholder": "ex: Sfax",
+      "departureDate": "Date de Départ",
+      "availableWeight": "Poids Disponible (KG)",
+      "weightPlaceholder": "ex: 20",
+      "publish": "Publier Voyage"
+    },
+    "myTrips": "Mes Voyages",
+    "available": "disponible"
+  },
+  "buyerDashboard": {
+    "title": "Tableau de Bord Acheteur",
+    "subtitle": "Suivez vos commandes et livraisons",
+    "newRequest": "Nouvelle Demande",
+    "stats": {
+      "totalSpent": "Total Dépensé",
+      "activeOrders": "Commandes Actives",
+      "completedOrders": "Commandes Terminées",
+      "pendingOffers": "Offres en Attente"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Gérez votre compte et vos préférences",
+    "personalInfo": "Informations Personnelles",
+    "security": "Sécurité",
+    "stats": "Statistiques",
+    "edit": "Modifier",
+    "done": "Terminer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "fullName": "Nom Complet",
+    "email": "Email",
+    "phone": "Téléphone",
+    "city": "Ville",
+    "role": "Rôle",
+    "changePassword": "Changer le Mot de Passe",
+    "updatePassword": "Mettre à jour le Mot de Passe",
+    "logout": "Se Déconnecter",
+    "logoutDescription": "Se déconnecter de tous les appareils",
+    "updateSuccess": "Profil mis à jour avec succès !",
+    "updateError": "Échec de la mise à jour du profil",
+    "avatarSuccess": "Avatar mis à jour !",
+    "avatarError": "Échec de la mise à jour de l'avatar",
+    "passwordSuccess": "Mot de passe changé avec succès !",
+    "passwordError": "Échec du changement de mot de passe",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit faire au moins 6 caractères",
+    "rating": "Note",
+    "deliveries": "Livraisons",
+    "verified": "Vérifié",
+    "yes": "Oui",
+    "pending": "En attente",
+    "notSet": "Non défini"
   },
   "wallet": {
     "title": "Portefeuille",

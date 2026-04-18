@@ -12,6 +12,7 @@ import { DeliveryOTP } from "@/components/delivery-otp";
 import { PaymentModal } from "@/components/payment-modal";
 import { supabase } from "@/lib/supabase/client";
 import { useAuthSession } from "@/lib/use-auth-session";
+import { useI18n } from "@/lib/i18n/client";
 import { 
   Package, 
   DollarSign, 
@@ -66,6 +67,7 @@ interface BuyerStats {
 
 export default function BuyerDashboardPage(): JSX.Element {
   const { user } = useAuthSession();
+  const { t } = useI18n();
   const [offers, setOffers] = useState<PostOffer[]>([]);
   const [posts, setPosts] = useState<BuyerPost[]>([]);
   const [stats, setStats] = useState<BuyerStats | null>(null);
@@ -130,7 +132,7 @@ export default function BuyerDashboardPage(): JSX.Element {
 
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data.");
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -142,20 +144,20 @@ export default function BuyerDashboardPage(): JSX.Element {
 
   const getDeliveryStatusLabel = (status: string) => {
     switch (status) {
-      case "pending": return "Awaiting Confirmation";
-      case "in_transit": return "In Transit";
-      case "delivered": return "Delivered";
-      case "buyer_confirmed": return "Receipt Confirmed";
-      case "completed": return "Completed";
+      case "pending": return t('admin.status.buyerPending');
+      case "in_transit": return t('orders.status.inTransit');
+      case "delivered": return t('admin.status.readyRelease');
+      case "buyer_confirmed": return t('admin.status.readyRelease');
+      case "completed": return t('orders.status.completed');
       default: return status;
     }
   };
 
   const getPaymentStatusLabel = (status: string) => {
     switch (status) {
-      case "pending": return "Payment Pending";
-      case "authorized": return "Payment Authorized";
-      case "captured": return "Payment Released";
+      case "pending": return t('admin.status.buyerPending');
+      case "authorized": return t('admin.status.buyerApproved');
+      case "captured": return t('admin.status.released');
       default: return status;
     }
   };
@@ -180,22 +182,22 @@ export default function BuyerDashboardPage(): JSX.Element {
         <div className="container max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-1">Buyer Dashboard</h1>
-              <p className="text-muted">Track your orders and deliveries</p>
+              <h1 className="text-3xl font-bold mb-1">{t('buyerDashboard.title')}</h1>
+              <p className="text-muted">{t('buyerDashboard.subtitle')}</p>
             </div>
             <Link href="/">
               <Button className="bg-electricBlue gap-2">
-                <Plus className="h-4 w-4" /> New Request
+                <Plus className="h-4 w-4" /> {t('buyerDashboard.newRequest')}
               </Button>
             </Link>
           </div>
 
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <StatCard icon={DollarSign} label="Total Spent" value={`${stats.totalSpent.toFixed(2)} TND`} color="bg-amber-500/20 text-amber-400" />
-              <StatCard icon={Package} label="Active Orders" value={stats.activeOrders} color="bg-blue-500/20 text-blue-400" />
-              <StatCard icon={CheckCircle2} label="Completed" value={stats.completedOrders} color="bg-emerald-500/20 text-emerald-400" />
-              <StatCard icon={Clock} label="Pending Offers" value={stats.pendingOffers} color="bg-amber-500/20 text-amber-400" />
+              <StatCard icon={DollarSign} label={t('buyerDashboard.stats.totalSpent')} value={`${stats.totalSpent.toFixed(2)} TND`} color="bg-amber-500/20 text-amber-400" />
+              <StatCard icon={Package} label={t('buyerDashboard.stats.activeOrders')} value={stats.activeOrders} color="bg-blue-500/20 text-blue-400" />
+              <StatCard icon={CheckCircle2} label={t('buyerDashboard.stats.completedOrders')} value={stats.completedOrders} color="bg-emerald-500/20 text-emerald-400" />
+              <StatCard icon={Clock} label={t('buyerDashboard.stats.pendingOffers')} value={stats.pendingOffers} color="bg-amber-500/20 text-amber-400" />
             </div>
           )}
 
@@ -209,13 +211,13 @@ export default function BuyerDashboardPage(): JSX.Element {
           <Card className="p-6 mb-6">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
               <Package className="h-5 w-5 text-electricBlue" />
-              Your Orders
+              {t('orders.title')}
             </h2>
 
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin h-8 w-8 border-2 border-electricBlue/30 border-t-electricBlue rounded-full mx-auto" />
-                <p className="text-muted mt-2">Loading...</p>
+                <p className="text-muted mt-2">{t('common.loading')}</p>
               </div>
             ) : offers.length > 0 ? (
               <div className="space-y-4">
@@ -237,7 +239,7 @@ export default function BuyerDashboardPage(): JSX.Element {
                             offer.status === "pending" ? "bg-amber/20 text-amber" :
                             "bg-white/10 text-muted"
                           )}>
-                            {offer.status.replace("_", " ")}
+                            {t(`orders.status.${offer.status}` as any) || offer.status}
                           </Badge>
                           <Badge className="text-[10px] bg-white/10 text-muted">
                             {getDeliveryStatusLabel(offer.delivery_status)}
@@ -251,7 +253,7 @@ export default function BuyerDashboardPage(): JSX.Element {
                           </p>
                         )}
                         {offer.traveler && (
-                          <p className="text-xs text-muted mt-1">Traveler: {offer.traveler.full_name}</p>
+                          <p className="text-xs text-muted mt-1">{t('auth.role.traveler')}: {offer.traveler.full_name}</p>
                         )}
                       </div>
 
@@ -264,17 +266,17 @@ export default function BuyerDashboardPage(): JSX.Element {
                         <div className="flex gap-2">
                           {offer.status === "accepted" && offer.payment_status === "pending" && (
                             <Button className="bg-emerald hover:bg-emerald/80 gap-1 h-8 text-xs" onClick={() => setActivePaymentOffer(offer)}>
-                              <Wallet className="h-3 w-3" />Pay
+                              <Wallet className="h-3 w-3" />{t('wallet.title')}
                             </Button>
                           )}
                           {offer.delivery_status === "delivered" && (
                             <Button className="bg-electricBlue hover:bg-electricBlue/80 gap-1 h-8 text-xs" onClick={() => setActiveOtpOffer(offer)}>
-                              <Shield className="h-3 w-3" />Confirm Receipt
+                              <Shield className="h-3 w-3" />{t('common.confirm')}
                             </Button>
                           )}
                           {offer.status !== "pending" && (
                             <Button variant="secondary" onClick={() => setActiveChatOfferId(offer.id)} className="gap-1 h-8 text-xs">
-                              <MessageSquare className="h-3 w-3" />Chat
+                              <MessageSquare className="h-3 w-3" />{t('dashboard.quickActions.viewMessages')}
                             </Button>
                           )}
                         </div>
@@ -286,8 +288,8 @@ export default function BuyerDashboardPage(): JSX.Element {
             ) : (
               <div className="text-center py-12">
                 <Package className="h-12 w-12 text-muted mx-auto mb-4" />
-                <p className="text-muted mb-4">No orders yet</p>
-                <Link href="/"><Button className="bg-electricBlue gap-2"><Plus className="h-4 w-4" />Create Your First Request</Button></Link>
+                <p className="text-muted mb-4">{t('orders.noOrders')}</p>
+                <Link href="/"><Button className="bg-electricBlue gap-2"><Plus className="h-4 w-4" />{t('orders.createOrder')}</Button></Link>
               </div>
             )}
           </Card>

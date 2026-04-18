@@ -7,6 +7,7 @@ import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/lib/use-auth-session";
+import { useI18n } from "@/lib/i18n/client";
 import { supabase } from "@/lib/supabase/client";
 import { 
   Package, 
@@ -50,6 +51,7 @@ export const dynamic = "force-dynamic";
 
 export default function DashboardPage(): JSX.Element {
   const { isAuthenticated, role, effectiveRole, isAdmin, profile, user } = useAuthSession();
+  const { t } = useI18n();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,16 +185,16 @@ export default function DashboardPage(): JSX.Element {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return t('dashboard.greeting.morning');
+    if (hour < 18) return t('dashboard.greeting.afternoon');
+    return t('dashboard.greeting.evening');
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case "buyer": return "Buyer";
-      case "traveler": return "Traveler";
-      case "both": return "Buyer + Traveler";
+      case "buyer": return t('auth.role.buyer');
+      case "traveler": return t('auth.role.traveler');
+      case "both": return t('auth.role.both');
       default: return role;
     }
   };
@@ -262,10 +264,10 @@ export default function DashboardPage(): JSX.Element {
       <AppShell>
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <Card className="p-8 text-center">
-            <h1 className="text-2xl font-semibold mb-4">Welcome to Ghorba Express</h1>
-            <p className="text-muted mb-6">Sign in to access your dashboard</p>
+            <h1 className="text-2xl font-semibold mb-4">{t('auth.title')}</h1>
+            <p className="text-muted mb-6">{t('nav.login')}</p>
             <Link href="/auth">
-              <Button className="bg-electricBlue">Sign In</Button>
+              <Button className="bg-electricBlue">{t('auth.signIn')}</Button>
             </Link>
           </Card>
         </div>
@@ -273,8 +275,7 @@ export default function DashboardPage(): JSX.Element {
     );
   }
 
-  return (
-    <AppShell>
+  return (    <AppShell>
       <div className="container max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -282,8 +283,8 @@ export default function DashboardPage(): JSX.Element {
             {getGreeting()}, <Link href={`/profile/${user?.id}`} className="hover:text-electricBlue transition-colors">{profile?.full_name?.split(" ")[0] || "User"}</Link>!
           </h1>
           <p className="text-muted">
-            {getRoleLabel(role || "buyer")} • {isAdmin && "Admin • "}
-            {stats?.rating.toFixed(1)} ⭐ Rating
+            {getRoleLabel(role || "buyer")} • {isAdmin && t('dashboard.adminView') + " • "}
+            {stats?.rating.toFixed(1)} ⭐ {t('dashboard.stats.rating')}
           </p>
         </div>
 
@@ -294,13 +295,13 @@ export default function DashboardPage(): JSX.Element {
               <>
                 <StatCard
                   icon={Package}
-                  label="Active Orders"
+                  label={t('dashboard.stats.activeOrders')}
                   value={stats.activeOrders}
                   color="bg-blue-500/20 text-blue-600 dark:text-blue-400"
                 />
                 <StatCard
                   icon={DollarSign}
-                  label="Total Spent"
+                  label={t('dashboard.stats.totalSpent')}
                   value={`${stats.totalSpent.toFixed(2)} TND`}
                   color="bg-amber-500/20 text-amber-600 dark:text-amber-400"
                 />
@@ -310,28 +311,28 @@ export default function DashboardPage(): JSX.Element {
               <>
                 <StatCard
                   icon={Truck}
-                  label="Active Trips"
+                  label={t('dashboard.stats.activeTrips')}
                   value={stats.activeTrips}
                   color="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                 />
                 <StatCard
                   icon={Wallet}
-                  label="Total Earnings"
+                  label={t('dashboard.stats.totalEarnings')}
                   value={`${stats.totalEarnings.toFixed(2)} TND`}
-                  trend={`${stats.deliveriesCount} deliveries`}
+                  trend={`${stats.deliveriesCount} ${t('dashboard.stats.deliveries')}`}
                   color="bg-purple-500/20 text-purple-600 dark:text-purple-400"
                 />
               </>
             )}
             <StatCard
               icon={CheckCircle2}
-              label="Completed"
+              label={t('orders.status.completed')}
               value={stats.completedOrders}
               color="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
             />
             <StatCard
               icon={MessageSquare}
-              label="Unread Messages"
+              label={t('dashboard.stats.unreadMessages')}
               value={stats.unreadMessages}
               color="bg-rose-500/20 text-rose-600 dark:text-rose-400"
             />
@@ -343,7 +344,7 @@ export default function DashboardPage(): JSX.Element {
           {(effectiveRole === "traveler" || role === "traveler") && (
             <QuickAction
               icon={Plus}
-              label="Post a Trip"
+              label={t('dashboard.quickActions.postTrip')}
               href="/dashboard/traveler"
               color="hover:border-emerald-500/30"
             />
@@ -351,20 +352,20 @@ export default function DashboardPage(): JSX.Element {
           {(effectiveRole === "buyer" || role === "buyer") && (
             <QuickAction
               icon={Package}
-              label="Create Order"
+              label={t('dashboard.quickActions.createOrder')}
               href="/dashboard/buyer"
               color="hover:border-blue-500/30"
             />
           )}
           <QuickAction
             icon={MessageSquare}
-            label="View Messages"
+            label={t('dashboard.quickActions.viewMessages')}
             href="/messages"
             color="hover:border-electricBlue/30"
           />
           <QuickAction
             icon={MapPin}
-            label="Browse Posts"
+            label={t('dashboard.quickActions.browsePosts')}
             href="/"
             color="hover:border-purple-500/30"
           />
@@ -377,10 +378,10 @@ export default function DashboardPage(): JSX.Element {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <Clock className="h-5 w-5 text-electricBlue" />
-                  Recent Activity
+                  {t('dashboard.recentActivity.title')}
                 </h2>
                 <Link href="/messages" className="text-sm text-electricBlue hover:underline">
-                  View all
+                  {t('dashboard.recentActivity.viewAll')}
                 </Link>
               </div>
               
@@ -402,31 +403,26 @@ export default function DashboardPage(): JSX.Element {
                         activity.type === "payment" && "bg-amber-500/20 text-amber-600 dark:text-amber-400"
                       )}>
                         {activity.type === "order" && <Package className="h-4 w-4" />}
-                        {activity.type === "message" && <MessageSquare className="h-4 w-4" />}
                         {activity.type === "trip" && <Truck className="h-4 w-4" />}
+                        {activity.type === "message" && <MessageSquare className="h-4 w-4" />}
                         {activity.type === "payment" && <DollarSign className="h-4 w-4" />}
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium">{activity.title}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium">{activity.title}</p>
+                          <span className="text-[10px] text-muted uppercase tracking-wider">{t(`dashboard.recentActivity.types.${activity.type}`)}</span>
+                        </div>
                         <p className="text-sm text-muted">{activity.description}</p>
-                        <p className="text-xs text-muted mt-1">{activity.timestamp}</p>
+                        <p className="text-[10px] text-muted mt-1">{activity.timestamp}</p>
                       </div>
-                      {activity.status && (
-                        <span className={cn(
-                          "px-2 py-1 rounded-full text-xs",
-                          activity.status === "new" && "bg-electricBlue/20 text-electricBlue",
-                          activity.status === "pending" && "bg-amber-500/20 text-amber-400",
-                          activity.status === "accepted" && "bg-blue-500/20 text-blue-400",
-                          activity.status === "completed" && "bg-emerald-500/20 text-emerald-400"
-                        )}>
-                          {activity.status}
-                        </span>
-                      )}
                     </motion.div>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted text-center py-8">No recent activity</p>
+                <div className="text-center py-12">
+                  <Bell className="h-12 w-12 text-muted/30 mx-auto mb-4" />
+                  <p className="text-muted">{t('dashboard.recentActivity.empty')}</p>
+                </div>
               )}
             </Card>
           </div>
