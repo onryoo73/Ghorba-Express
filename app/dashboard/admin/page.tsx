@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { authedJsonFetch } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n/client";
 
 interface OrderRow {
   id: string;
@@ -89,6 +90,7 @@ interface AdminStats {
 }
 
 export default function AdminDashboardPage(): JSX.Element {
+  const { t } = useI18n();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [disputes, setDisputes] = useState<DisputeRow[]>([]);
   const [paymentProofs, setPaymentProofs] = useState<PaymentProof[]>([]);
@@ -137,7 +139,7 @@ export default function AdminDashboardPage(): JSX.Element {
       setError(null);
     } catch (err) {
       console.error("Admin data load error:", err);
-      setError(err instanceof Error ? err.message : "Failed to load admin data - check console for details");
+      setError(err instanceof Error ? err.message : t('admin.error'));
     } finally {
       setLoading(false);
     }
@@ -224,15 +226,15 @@ export default function AdminDashboardPage(): JSX.Element {
   const getStatusBadge = (status: OrderCard["status"]) => {
     switch (status) {
       case "buyer_pending":
-        return <Badge className="bg-amber/20 text-amber text-[10px]">Buyer Payment</Badge>;
+        return <Badge className="bg-amber/20 text-amber text-[10px]">{t('admin.status.buyerPending')}</Badge>;
       case "buyer_approved":
-        return <Badge className="bg-blue/20 text-blue text-[10px]">Awaiting Delivery</Badge>;
+        return <Badge className="bg-blue/20 text-blue text-[10px]">{t('admin.status.buyerApproved')}</Badge>;
       case "traveler_pending":
-        return <Badge className="bg-blue/20 text-blue text-[10px]">Traveler Info</Badge>;
+        return <Badge className="bg-blue/20 text-blue text-[10px]">{t('admin.status.travelerInfo')}</Badge>;
       case "ready_release":
-        return <Badge className="bg-emerald/20 text-emerald text-[10px]">Ready to Release</Badge>;
+        return <Badge className="bg-emerald/20 text-emerald text-[10px]">{t('admin.status.readyRelease')}</Badge>;
       case "released":
-        return <Badge className="bg-white/10 text-muted text-[10px]">Released</Badge>;
+        return <Badge className="bg-white/10 text-muted text-[10px]">{t('admin.status.released')}</Badge>;
     }
   };
 
@@ -245,7 +247,7 @@ export default function AdminDashboardPage(): JSX.Element {
       });
       await loadAdminData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed.");
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -261,7 +263,7 @@ export default function AdminDashboardPage(): JSX.Element {
       await loadAdminData();
       setSelectedOrder(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Release failed.");
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -271,28 +273,28 @@ export default function AdminDashboardPage(): JSX.Element {
     <AppShell>
       <DashboardGuard adminOnly>
         <section className="space-y-4">
-          <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+          <h1 className="text-2xl font-semibold">{t('admin.title')}</h1>
           {error && <p className="text-sm text-red-400 bg-red-400/10 p-3 rounded-lg">{error}</p>}
 
           {/* Platform Revenue Stats */}
           {adminStats && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="p-4 bg-emerald/5 border-emerald/20">
-                <p className="text-xs text-muted uppercase tracking-wide">Platform Fees Collected</p>
+                <p className="text-xs text-muted uppercase tracking-wide">{t('admin.platformFees')}</p>
                 <p className="text-2xl font-bold text-emerald mt-1">
                   {adminStats.totalFees.toFixed(2)} TND
                 </p>
-                <p className="text-xs text-muted mt-1">Admin revenue</p>
+                <p className="text-xs text-muted mt-1">{t('dashboard.adminView')}</p>
               </Card>
               <Card className="p-4 bg-blue/5 border-blue/20">
-                <p className="text-xs text-muted uppercase tracking-wide">Paid to Travelers</p>
+                <p className="text-xs text-muted uppercase tracking-wide">{t('admin.travelerEarnings')}</p>
                 <p className="text-2xl font-bold text-blue mt-1">
                   {adminStats.totalTravelerEarnings.toFixed(2)} TND
                 </p>
-                <p className="text-xs text-muted mt-1">Total earnings</p>
+                <p className="text-xs text-muted mt-1">{t('dashboard.stats.totalEarnings')}</p>
               </Card>
               <Card className="p-4 bg-electricBlue/5 border-electricBlue/20">
-                <p className="text-xs text-muted uppercase tracking-wide">Total Volume</p>
+                <p className="text-xs text-muted uppercase tracking-wide">{t('admin.totalVolume')}</p>
                 <p className="text-2xl font-bold text-electricBlue mt-1">
                   {adminStats.totalVolume.toFixed(2)} TND
                 </p>
@@ -307,7 +309,7 @@ export default function AdminDashboardPage(): JSX.Element {
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-lg flex items-center gap-2">
                   <Wallet className="h-5 w-5 text-electricBlue" />
-                  Orders
+                  {t('admin.orders')}
                 </h2>
                 <div className="flex items-center gap-2">
                   <label className="flex items-center gap-2 text-xs cursor-pointer">
@@ -317,7 +319,7 @@ export default function AdminDashboardPage(): JSX.Element {
                       onChange={(e) => setShowReleased(e.target.checked)}
                       className="rounded"
                     />
-                    <span className="text-muted">Show released</span>
+                    <span className="text-muted">{t('admin.showReleased')}</span>
                   </label>
                   <Button 
                     variant="secondary" 
@@ -357,7 +359,7 @@ export default function AdminDashboardPage(): JSX.Element {
                   </button>
                 ))}
                 {orderCards.length === 0 && (
-                  <p className="text-sm text-muted text-center py-8 italic">No orders yet.</p>
+                  <p className="text-sm text-muted text-center py-8 italic">{t('admin.noOrdersFound')}</p>
                 )}
               </div>
             </Card>
@@ -367,7 +369,7 @@ export default function AdminDashboardPage(): JSX.Element {
               {selectedOrder ? (
                 <Card className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-semibold text-lg">Order Details</h2>
+                    <h2 className="font-semibold text-lg">{t('admin.orderDetails')}</h2>
                     <button onClick={() => setSelectedOrder(null)} className="text-muted hover:text-white">
                       <X className="h-5 w-5" />
                     </button>
@@ -380,7 +382,7 @@ export default function AdminDashboardPage(): JSX.Element {
                     <div className="space-y-3">
                       <h3 className="text-sm font-medium flex items-center gap-2">
                         <User className="h-4 w-4 text-electricBlue" />
-                        Buyer Payment
+                        {t('admin.buyerPayment')}
                       </h3>
                       <div className="rounded-xl border border-white/10 p-3 bg-white/5 space-y-3">
                         <div className="flex justify-between items-start">
@@ -426,7 +428,7 @@ export default function AdminDashboardPage(): JSX.Element {
                               disabled={loading}
                               className="flex-1 bg-emerald hover:bg-emerald/80 h-8 text-xs"
                             >
-                              Approve
+                              {t('admin.actions.approve')}
                             </Button>
                             <Button
                               onClick={() => void verifyPayment(selectedOrder.buyerProof!.id, selectedOrder.buyerProof!.offer_id, false)}
@@ -434,13 +436,13 @@ export default function AdminDashboardPage(): JSX.Element {
                               variant="secondary"
                               className="flex-1 h-8 text-xs"
                             >
-                              Reject
+                              {t('admin.actions.reject')}
                             </Button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-emerald text-xs font-medium">
                             <CheckCircle2 className="h-4 w-4" />
-                            Payment Verified
+                            {t('admin.status.buyerApproved')}
                           </div>
                         )}
                       </div>
@@ -452,13 +454,13 @@ export default function AdminDashboardPage(): JSX.Element {
                     <div className="space-y-3">
                       <h3 className="text-sm font-medium flex items-center gap-2">
                         <Smartphone className="h-4 w-4 text-emerald" />
-                        Traveler Payment
+                        {t('admin.travelerPayment')}
                       </h3>
                       <div className="rounded-xl border border-emerald/30 p-3 bg-emerald/5 space-y-3">
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium text-sm">{selectedOrder.travelerPayment.traveler?.full_name || "Unknown"}</p>
-                            <p className="text-[10px] text-muted">Traveler</p>
+                            <p className="text-[10px] text-muted">{t('auth.role.traveler')}</p>
                           </div>
                           <span className="text-sm font-bold text-emerald">
                             {selectedOrder.travelerPayment.amount_tnd?.toFixed(2)} TND
@@ -467,7 +469,7 @@ export default function AdminDashboardPage(): JSX.Element {
 
                         {selectedOrder.travelerPayment.traveler_payment_method ? (
                           <div className="bg-white/5 rounded-lg p-3 space-y-2">
-                            <p className="text-[10px] text-muted uppercase tracking-wider">Send payment to:</p>
+                            <p className="text-[10px] text-muted uppercase tracking-wider">{t('admin.sendPaymentTo')}:</p>
                             <div className="flex items-center gap-2">
                               {selectedOrder.travelerPayment.traveler_payment_method === "d17" ? (
                                 <Smartphone className="h-4 w-4 text-emerald" />
@@ -491,15 +493,15 @@ export default function AdminDashboardPage(): JSX.Element {
                               return (
                                 <div className="border-t border-white/10 pt-2 mt-2 space-y-1">
                                   <div className="flex justify-between text-xs">
-                                    <span className="text-muted">Total Amount:</span>
+                                    <span className="text-muted">{t('admin.totalAmount')}:</span>
                                     <span>{amount.toFixed(2)} TND</span>
                                   </div>
                                   <div className="flex justify-between text-xs">
-                                    <span className="text-muted">Platform Fee ({feeRate}%):</span>
+                                    <span className="text-muted">{t('admin.platformFee')} ({feeRate}%):</span>
                                     <span className="text-amber">-{fee.toFixed(2)} TND</span>
                                   </div>
                                   <div className="flex justify-between text-xs font-medium border-t border-white/10 pt-1">
-                                    <span className="text-emerald">Traveler Receives:</span>
+                                    <span className="text-emerald">{t('admin.travelerReceives')}:</span>
                                     <span className="text-emerald">{net.toFixed(2)} TND</span>
                                   </div>
                                 </div>
@@ -509,7 +511,7 @@ export default function AdminDashboardPage(): JSX.Element {
                         ) : (
                           <div className="flex items-center gap-2 text-amber text-xs">
                             <Clock className="h-4 w-4" />
-                            Waiting for traveler to provide payment info
+                            {t('admin.waitingTravelerInfo')}
                           </div>
                         )}
 
@@ -520,12 +522,12 @@ export default function AdminDashboardPage(): JSX.Element {
                             onClick={() => void releasePayment(selectedOrder.travelerPayment!.id)}
                           >
                             <ArrowRight className="h-4 w-4 mr-2" />
-                            Release Payment
+                            {t('admin.actions.release')}
                           </Button>
                         ) : !selectedOrder.buyerProof?.verified ? (
                           <div className="flex items-center gap-2 text-amber text-xs p-2 bg-amber/10 rounded-lg">
                             <AlertCircle className="h-4 w-4" />
-                            Approve buyer payment first
+                            {t('admin.approveBuyerFirst')}
                           </div>
                         ) : null}
                       </div>
@@ -537,7 +539,7 @@ export default function AdminDashboardPage(): JSX.Element {
                     <div className="rounded-xl border border-white/10 p-3 bg-white/5">
                       <div className="flex items-center gap-2 text-amber text-xs">
                         <Clock className="h-4 w-4" />
-                        Awaiting traveler payment info. The traveler needs to provide D17/Flouci details after delivery.
+                        {t('admin.waitingTravelerDeliveryInfo')}
                       </div>
                     </div>
                   )}
@@ -546,7 +548,7 @@ export default function AdminDashboardPage(): JSX.Element {
                     <div className="rounded-xl border border-white/10 p-3 bg-white/5">
                       <div className="flex items-center gap-2 text-blue text-xs">
                         <Clock className="h-4 w-4" />
-                        Payment verified. Delivery in progress - waiting for OTP confirmation.
+                        {t('admin.deliveryInProgress')}
                       </div>
                     </div>
                   )}
@@ -558,7 +560,7 @@ export default function AdminDashboardPage(): JSX.Element {
               )}
 
               <Card className="space-y-2">
-                <h2 className="font-medium">Escrow Actions</h2>
+                <h2 className="font-medium">{t('admin.escrowActions')}</h2>
                 <Input
                   placeholder="Order ID"
                   value={selectedOrderId}
@@ -580,7 +582,7 @@ export default function AdminDashboardPage(): JSX.Element {
                     } catch (err) {
                       setError(err instanceof Error ? err.message : "Release failed.");
                     }
-                  }}>Release Escrow</Button>
+                  }}>{t('admin.releaseEscrow')}</Button>
                   <Button variant="secondary" onClick={async () => {
                     try {
                       await authedJsonFetch("/api/escrow/refund", {
@@ -592,13 +594,13 @@ export default function AdminDashboardPage(): JSX.Element {
                       setError(err instanceof Error ? err.message : "Refund failed.");
                     }
                   }}>
-                    Refund Escrow
+                    {t('admin.refundEscrow')}
                   </Button>
                 </div>
               </Card>
 
               <Card className="space-y-2">
-                <h2 className="font-medium">Recent Orders</h2>
+                <h2 className="font-medium">{t('admin.recentOrders')}</h2>
                 <div className="max-h-[200px] overflow-y-auto space-y-2 pr-1">
                   {orders.map((order) => (
                     <div key={order.id} className="rounded-xl border border-white/10 p-3 bg-white/5">
@@ -606,28 +608,32 @@ export default function AdminDashboardPage(): JSX.Element {
                       <p className="text-sm font-medium">
                         {order.origin} → {order.destination}
                       </p>
-                      <p className="text-[10px] uppercase text-amber font-bold">Status: {order.status}</p>
+                      <p className="text-[10px] uppercase text-amber font-bold">
+                        {t('admin.status.label').replace('{status}', t(`orders.status.${order.status}` as any) || order.status)}
+                      </p>
                     </div>
                   ))}
-                  {orders.length === 0 && <p className="text-sm text-muted">No orders found.</p>}
+                  {orders.length === 0 && <p className="text-sm text-muted">{t('admin.noOrdersFound')}</p>}
                 </div>
               </Card>
             </div>
           </div>
 
           <Card className="space-y-2">
-            <h2 className="font-medium">Disputes</h2>
+            <h2 className="font-medium">{t('admin.disputes')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {disputes.map((dispute) => (
                 <div key={dispute.id} className="rounded-xl border border-white/10 p-3 bg-white/5">
                   <p className="text-[10px] text-muted">Dispute: {dispute.id}</p>
                   <p className="text-xs">Order: {dispute.order_id}</p>
                   <p className="text-sm mt-1">{dispute.reason}</p>
-                  <p className="text-[10px] uppercase text-rose-400 font-bold mt-2">Status: {dispute.status}</p>
+                  <p className="text-[10px] uppercase text-rose-400 font-bold mt-2">
+                    {t('admin.status.label').replace('{status}', dispute.status)}
+                  </p>
                 </div>
               ))}
             </div>
-            {disputes.length === 0 && <p className="text-sm text-muted text-center py-4">No disputes found.</p>}
+            {disputes.length === 0 && <p className="text-sm text-muted text-center py-4">{t('admin.noDisputesFound')}</p>}
           </Card>
         </section>
       </DashboardGuard>

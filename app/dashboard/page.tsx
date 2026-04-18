@@ -162,7 +162,9 @@ export default function DashboardPage(): JSX.Element {
             } else {
               realActivities.push({
                 id: o.id, type: "payment",
-                title: o.status === "completed" ? "Payment received" : `Delivery: ${o.delivery_status}`,
+                title: o.status === "completed" 
+                  ? t('dashboard.recentActivity.paymentReceived') 
+                  : t('dashboard.recentActivity.deliveryStatus').replace('{status}', t(`orders.status.${o.delivery_status}` as any) || o.delivery_status),
                 description: `${buyerName} · ${(o as any).amount_tnd?.toFixed(2) || "0.00"} TND`,
                 timestamp: new Date(o.created_at).toLocaleString(),
                 status: o.status
@@ -431,27 +433,27 @@ export default function DashboardPage(): JSX.Element {
           <div className="space-y-6">
             {/* Profile Card */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Your Profile</h3>
+              <h3 className="font-semibold mb-4">{t('dashboard.sidePanel.profile')}</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted">Rating</span>
+                  <span className="text-sm text-muted">{t('dashboard.stats.rating')}</span>
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 text-amber fill-current" />
                     <span>{stats?.rating.toFixed(1)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted">Deliveries</span>
+                  <span className="text-sm text-muted">{t('dashboard.stats.deliveries')}</span>
                   <span>{stats?.deliveriesCount}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted">Role</span>
-                  <span className="capitalize">{role}</span>
+                  <span className="text-sm text-muted">{t('profile.role')}</span>
+                  <span className="capitalize">{getRoleLabel(role || "buyer")}</span>
                 </div>
               </div>
               <Link href="/profile">
                 <Button variant="secondary" className="w-full mt-4">
-                  Edit Profile
+                  {t('dashboard.sidePanel.editProfile')}
                 </Button>
               </Link>
             </Card>
@@ -464,13 +466,13 @@ export default function DashboardPage(): JSX.Element {
                     <Shield className="h-5 w-5 text-electricBlue" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Admin Panel</h3>
-                    <p className="text-sm text-muted">Manage disputes & users</p>
+                    <h3 className="font-semibold">{t('dashboard.sidePanel.adminPanel')}</h3>
+                    <p className="text-sm text-muted">{t('dashboard.sidePanel.adminDescription')}</p>
                   </div>
                 </div>
                 <Link href="/dashboard/admin">
                   <Button className="w-full bg-electricBlue">
-                    Open Admin Dashboard
+                    {t('dashboard.sidePanel.openAdmin')}
                   </Button>
                 </Link>
               </Card>
@@ -480,14 +482,14 @@ export default function DashboardPage(): JSX.Element {
             <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Bell className="h-4 w-4" />
-                Notifications
+                {t('dashboard.sidePanel.notifications')}
               </h3>
               <p className="text-sm text-muted mb-4">
-                You have {stats?.unreadMessages || 0} unread messages
+                {t('dashboard.sidePanel.unreadCount').replace('{count}', (stats?.unreadMessages || 0).toString())}
               </p>
               <Link href="/messages">
                 <Button variant="secondary" className="w-full">
-                  View Messages
+                  {t('dashboard.sidePanel.viewMessages')}
                 </Button>
               </Link>
             </Card>

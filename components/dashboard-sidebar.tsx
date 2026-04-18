@@ -18,6 +18,7 @@ import {
 import type { DashboardMode, UserRole } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/client";
 
 interface DashboardSidebarProps {
   isOpen: boolean;
@@ -43,34 +44,35 @@ export function DashboardSidebar({
   userAvatar
 }: DashboardSidebarProps): JSX.Element {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   let links: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [];
 
   if (isAuthenticated && isAdmin) {
     // Admins ONLY see administration links
     links = [
-      { href: "/dashboard/admin", label: "Admin Dashboard", icon: Shield },
-      { href: "/dashboard", label: "Hub", icon: LayoutDashboard },
-      { href: "/profile", label: "Admin Profile", icon: Settings }
+      { href: "/dashboard/admin", label: t('nav.adminDashboard'), icon: Shield },
+      { href: "/dashboard", label: t('nav.hub'), icon: LayoutDashboard },
+      { href: "/profile", label: t('nav.adminProfile'), icon: Settings }
     ];
   } else {
     // Regular users see everything else
     links = [
-      { href: "/", label: "Home", icon: Home },
-      { href: "/dashboard", label: "Hub", icon: LayoutDashboard }
+      { href: "/", label: t('nav.home'), icon: Home },
+      { href: "/dashboard", label: t('nav.hub'), icon: LayoutDashboard }
     ];
 
     if (isAuthenticated && (effectiveRole === "buyer" || role === "buyer")) {
-      links.push({ href: "/dashboard/buyer", label: "Buyer", icon: User });
+      links.push({ href: "/dashboard/buyer", label: t('nav.buyer'), icon: User });
     }
     if (isAuthenticated && (effectiveRole === "traveler" || role === "traveler")) {
-      links.push({ href: "/dashboard/traveler", label: "Traveler", icon: Truck });
+      links.push({ href: "/dashboard/traveler", label: t('nav.traveler'), icon: Truck });
     }
     
-    links.push({ href: "/orders", label: "Orders", icon: Package });
+    links.push({ href: "/orders", label: t('nav.orders'), icon: Package });
     if (isAuthenticated) {
-      links.push({ href: "/messages", label: "Messages", icon: MessageSquare });
-      links.push({ href: "/profile", label: "Profile", icon: Settings });
+      links.push({ href: "/messages", label: t('nav.messages'), icon: MessageSquare });
+      links.push({ href: "/profile", label: t('nav.profile'), icon: Settings });
     }
   }
 
@@ -110,7 +112,13 @@ export function DashboardSidebar({
             {isOpen && (
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{userName || "User"}</p>
-                <p className="text-[10px] text-muted truncate">{isAdmin ? "Admin" : role === "both" ? `Both · ${effectiveRole}` : role || "Member"}</p>
+                <p className="text-[10px] text-muted truncate">
+                  {isAdmin 
+                    ? t('common.admin') 
+                    : role === "both" 
+                      ? `${t('auth.role.both')} · ${effectiveRole}` 
+                      : t(`auth.role.${role}` as any) || t('common.member')}
+                </p>
               </div>
             )}
           </Link>

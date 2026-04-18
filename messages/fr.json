@@ -10,6 +10,11 @@
     "orders": "Commandes",
     "dashboard": "Tableau de Bord",
     "admin": "Panneau Admin",
+    "adminDashboard": "Tableau Admin",
+    "adminProfile": "Profil Admin",
+    "hub": "Accueil Hub",
+    "buyer": "Acheteur",
+    "traveler": "Voyageur",
     "profile": "Profil",
     "login": "Connexion / Inscription",
     "logout": "Déconnexion",
@@ -127,7 +132,19 @@
         "trip": "Voyage",
         "message": "Message",
         "payment": "Paiement"
-      }
+      },
+      "paymentReceived": "Paiement reçu",
+      "deliveryStatus": "Livraison: {status}"
+    },
+    "sidePanel": {
+      "profile": "Votre Profil",
+      "editProfile": "Modifier Profil",
+      "adminPanel": "Panneau Admin",
+      "adminDescription": "Gérer litiges & utilisateurs",
+      "openAdmin": "Ouvrir Tableau Admin",
+      "notifications": "Notifications",
+      "unreadCount": "Vous avez {count} messages non lus",
+      "viewMessages": "Voir Messages"
     }
   },
   "travelerDashboard": {
@@ -236,6 +253,23 @@
     "travelerEarnings": "Payé aux Voyageurs",
     "totalVolume": "Volume Total",
     "showReleased": "Afficher libérés",
+    "orderDetails": "Détails de la Commande",
+    "buyerPayment": "Paiement Acheteur",
+    "travelerPayment": "Paiement Voyageur",
+    "waitingTravelerInfo": "En attente des infos de paiement du voyageur",
+    "approveBuyerFirst": "Approuvez d'abord le paiement de l'acheteur",
+    "deliveryInProgress": "Paiement vérifié. Livraison en cours - en attente de confirmation OTP.",
+    "escrowActions": "Actions Escrow",
+    "releaseEscrow": "Libérer Escrow",
+    "refundEscrow": "Rembourser Escrow",
+    "recentOrders": "Commandes Récentes",
+    "noOrdersFound": "Aucune commande trouvée.",
+    "noDisputesFound": "Aucun litige trouvé.",
+    "totalAmount": "Montant Total",
+    "platformFee": "Frais Plateforme",
+    "travelerReceives": "Le Voyageur Reçoit",
+    "sendPaymentTo": "Envoyer le paiement à",
+    "waitingTravelerDeliveryInfo": "En attente des infos de paiement du voyageur. Le voyageur doit fournir ses détails D17/Flouci après la livraison.",
     "actions": {
       "approve": "Approuver",
       "reject": "Rejeter",
@@ -247,9 +281,9 @@
       "buyerApproved": "Paiement Acheteur Approuvé",
       "travelerInfo": "Infos Voyageur Requises",
       "readyRelease": "Prêt à Libérer",
-      "released": "Libéré"
-    }
-  },
+      "released": "Libéré",
+      "label": "Statut: {status}"
+    },
   "common": {
     "loading": "Chargement...",
     "error": "Erreur",
@@ -265,6 +299,9 @@
     "submit": "Envoyer",
     "refresh": "Actualiser",
     "notifications": "Notifications",
-    "noNotifications": "Aucune notification"
+    "noNotifications": "Aucune notification",
+    "admin": "Admin",
+    "member": "Membre"
   }
+}
 }

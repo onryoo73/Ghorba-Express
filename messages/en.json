@@ -10,6 +10,11 @@
     "orders": "Orders",
     "dashboard": "Dashboard",
     "admin": "Admin Panel",
+    "adminDashboard": "Admin Dashboard",
+    "adminProfile": "Admin Profile",
+    "hub": "Hub",
+    "buyer": "Buyer",
+    "traveler": "Traveler",
     "profile": "Profile",
     "login": "Log in / Sign up",
     "logout": "Log out",
@@ -127,7 +132,19 @@
         "trip": "Trip",
         "message": "Message",
         "payment": "Payment"
-      }
+      },
+      "paymentReceived": "Payment received",
+      "deliveryStatus": "Delivery: {status}"
+    },
+    "sidePanel": {
+      "profile": "Your Profile",
+      "editProfile": "Edit Profile",
+      "adminPanel": "Admin Panel",
+      "adminDescription": "Manage disputes & users",
+      "openAdmin": "Open Admin Dashboard",
+      "notifications": "Notifications",
+      "unreadCount": "You have {count} unread messages",
+      "viewMessages": "View Messages"
     }
   },
   "travelerDashboard": {
@@ -236,6 +253,23 @@
     "travelerEarnings": "Paid to Travelers",
     "totalVolume": "Total Volume",
     "showReleased": "Show released",
+    "orderDetails": "Order Details",
+    "buyerPayment": "Buyer Payment",
+    "travelerPayment": "Traveler Payment",
+    "waitingTravelerInfo": "Waiting for traveler to provide payment info",
+    "approveBuyerFirst": "Approve buyer payment first",
+    "deliveryInProgress": "Payment verified. Delivery in progress - waiting for OTP confirmation.",
+    "escrowActions": "Escrow Actions",
+    "releaseEscrow": "Release Escrow",
+    "refundEscrow": "Refund Escrow",
+    "recentOrders": "Recent Orders",
+    "noOrdersFound": "No orders found.",
+    "noDisputesFound": "No disputes found.",
+    "totalAmount": "Total Amount",
+    "platformFee": "Platform Fee",
+    "travelerReceives": "Traveler Receives",
+    "sendPaymentTo": "Send payment to",
+    "waitingTravelerDeliveryInfo": "Awaiting traveler payment info. The traveler needs to provide D17/Flouci details after delivery.",
     "actions": {
       "approve": "Approve",
       "reject": "Reject",
@@ -247,9 +281,9 @@
       "buyerApproved": "Buyer Payment Approved",
       "travelerInfo": "Traveler Info Needed",
       "readyRelease": "Ready to Release",
-      "released": "Released"
-    }
-  },
+      "released": "Released",
+      "label": "Status: {status}"
+    },
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -265,6 +299,9 @@
     "submit": "Submit",
     "refresh": "Refresh",
     "notifications": "Notifications",
-    "noNotifications": "No notifications"
+    "noNotifications": "No notifications",
+    "admin": "Admin",
+    "member": "Member"
   }
+}
 }
