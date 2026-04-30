@@ -1,7 +1,9 @@
 "use client";
 
-import { Wallet, CheckCircle2, Smartphone, CreditCard, User, ArrowRight, ExternalLink, X, ChevronRight, Clock, AlertCircle, RefreshCw } from "lucide-react";
+import { Wallet, CheckCircle2, Smartphone, CreditCard, User, ArrowRight, ExternalLink, X, ChevronRight, Clock, AlertCircle, RefreshCw, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { supabase } from "@/lib/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { DashboardGuard } from "@/components/guards/dashboard-guard";
 import { Button } from "@/components/ui/button";
@@ -148,6 +150,36 @@ export default function AdminDashboardPage(): JSX.Element {
   useEffect(() => {
     console.log("[Admin] Loading data...");
     void loadAdminData();
+  }, []);
+
+  // Realtime subscriptions for admin dashboard
+  useEffect(() => {
+    if (!supabase) return;
+
+    // Subscribe to payment_proofs changes (new proofs, approvals)
+    const channel = supabase
+      .channel("admin_realtime")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "payment_proofs"
+      }, () => {
+        console.log("[Realtime] Payment proof changed, refreshing...");
+        void loadAdminData();
+      })
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "post_offers"
+      }, () => {
+        console.log("[Realtime] Offer changed, refreshing...");
+        void loadAdminData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Build order cards from proofs (which now include offer status)
