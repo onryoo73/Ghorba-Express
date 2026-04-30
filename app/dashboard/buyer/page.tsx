@@ -140,6 +140,30 @@ export default function BuyerDashboardPage(): JSX.Element {
 
   useEffect(() => {
     void loadData();
+
+    if (!user || !supabase) return;
+
+    // Subscribe to real-time updates for post_offers
+    const channel = supabase
+      .channel(`buyer_offers_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "post_offers",
+          filter: `buyer_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log("[Realtime] Buyer offer update detected:", payload);
+          void loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (supabase) void supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const getDeliveryStatusLabel = (status: string) => {

@@ -140,7 +140,31 @@ export default function TravelerDashboardPage(): JSX.Element {
     void loadOrders();
     void loadTrips();
     setLoading(false);
-  }, []);
+
+    if (!user || !supabase) return;
+
+    // Subscribe to real-time updates for post_offers where traveler is participant
+    const channel = supabase
+      .channel(`traveler_offers_${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "post_offers",
+          filter: `traveler_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log("[Realtime] Traveler offer update detected:", payload);
+          void loadOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (supabase) void supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const createTrip = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

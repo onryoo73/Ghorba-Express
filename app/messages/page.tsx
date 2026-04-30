@@ -237,7 +237,10 @@ export default function MessagesPage(): JSX.Element {
         event: 'INSERT',
         schema: 'public',
         table: 'post_offers'
-      }, () => fetchThreads())
+      }, (payload) => {
+        console.log('[Realtime] New offer detected:', payload.new.id);
+        fetchThreads();
+      })
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
