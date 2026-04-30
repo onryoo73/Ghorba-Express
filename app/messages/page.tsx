@@ -179,7 +179,7 @@ export default function MessagesPage(): JSX.Element {
     if (!supabase || !user) return;
     
     const userChannel = supabase
-      .channel(`user_${user.id}_updates`)
+      .channel(`threads_user_${user.id}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -289,7 +289,7 @@ export default function MessagesPage(): JSX.Element {
     if (!supabase || !user) return;
     
     const msgChannel = supabase
-      .channel(`chat_${selectedThread.id}_${user.id}`)
+      .channel(`chat_${selectedThread.id}`)
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
