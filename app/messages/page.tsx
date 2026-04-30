@@ -273,7 +273,7 @@ export default function MessagesPage(): JSX.Element {
       if (!supabase) return;
       const { data } = await supabase
         .from("chat_messages")
-        .select("*, sender:profiles(full_name)")
+        .select("*, sender:profiles!sender_id(full_name)")
         .eq("thread_id", selectedThread.id)
         .order("created_at", { ascending: true });
 
@@ -360,7 +360,7 @@ export default function MessagesPage(): JSX.Element {
       thread_id: selectedThread.id,
       sender_id: user.id,
       message: messageText
-    }).select('*, sender:profiles(full_name)').single();
+    }).select('*, sender:profiles!sender_id(full_name)').single();
     
     if (error) {
       // Remove optimistic message on error

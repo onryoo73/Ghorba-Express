@@ -17,7 +17,7 @@ export function useNotifications(userId: string | undefined) {
 
     const { data } = await supabase
       .from("notifications")
-      .select("*, sender:profiles(full_name)")
+      .select("*, sender:profiles!sender_id(full_name)")
       .eq("recipient_id", userIdRef.current)
       .order("created_at", { ascending: false })
       .limit(50);
