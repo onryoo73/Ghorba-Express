@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }): JSX.Eleme
       />
       <div
         className={cn(
-          "mx-auto min-h-screen w-full max-w-md px-4 pb-28 pt-6 sm:max-w-2xl lg:max-w-none lg:px-8 lg:pb-10",
+          "mx-auto min-h-screen w-full px-4 pb-28 pt-6 lg:px-8 lg:pb-10",
           sidebarOpen ? "lg:pl-[18rem]" : "lg:pl-24"
         )}
       >

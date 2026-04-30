@@ -123,18 +123,18 @@ export function AppHeader({
 
   return (
     <header className="sticky top-3 z-30 mb-6 rounded-2xl border border-border bg-surface-overlay/80 px-4 py-3 shadow-glow-light dark:shadow-glow backdrop-blur-xl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electricBlue/20">
+      <div className="flex items-center justify-between gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electricBlue/20 shrink-0">
             <PackageCheck className="h-5 w-5 text-electricBlue" />
           </div>
-          <div>
-            <p className="text-sm font-semibold">Ghorba Express</p>
-            <p className="text-xs text-muted">{isAdmin ? t('dashboard.adminView') : t('home.hero.subtitle')}</p>
+          <div className="hidden xs:block">
+            <p className="text-sm font-semibold whitespace-nowrap">Ghorba Express</p>
+            <p className="text-[10px] text-muted whitespace-nowrap">{isAdmin ? t('dashboard.adminView') : t('home.hero.subtitle')}</p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-xl border border-border bg-surface p-1 lg:flex">
+        <nav className="hidden items-center gap-1 rounded-xl border border-border bg-surface p-1 xl:flex">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
@@ -142,7 +142,7 @@ export function AppHeader({
                 key={link.href}
                 href={link.href as any}
                 className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-xs transition",
+                  "rounded-lg px-2.5 py-1.5 text-xs transition whitespace-nowrap",
                   active ? "bg-electricBlue text-white" : "text-muted hover:text-foreground"
                 )}
               >
@@ -152,16 +152,20 @@ export function AppHeader({
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           {/* Theme Toggle */}
-          <ThemeToggle />
+          <div className="shrink-0">
+            <ThemeToggle />
+          </div>
           
           {/* Language Switcher */}
-          <LanguageSwitcher />
+          <div className="shrink-0">
+            <LanguageSwitcher />
+          </div>
           
           {/* Notification Bell */}
           {isAuthenticated && !isAdmin && (
-            <div ref={notifRef} className="relative">
+            <div ref={notifRef} className="relative shrink-0">
               <button
                 onClick={() => { setShowNotifs(!showNotifs); if (!showNotifs) markAllRead(); }}
                 className="relative p-2 rounded-xl border border-border hover:bg-surface transition-all"
@@ -175,7 +179,7 @@ export function AppHeader({
               </button>
               
               {showNotifs && (
-                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border border-border bg-surface-overlay backdrop-blur-xl shadow-2xl z-50">
+                <div className="absolute right-0 top-full mt-2 w-72 xs:w-80 max-h-96 overflow-y-auto rounded-xl border border-border bg-surface-overlay backdrop-blur-xl shadow-2xl z-50">
                   <div className="p-3 border-b border-divider flex justify-between items-center">
                     <p className="text-sm font-medium">{t('common.notifications')}</p>
                     {unreadCount > 0 && (
@@ -205,50 +209,51 @@ export function AppHeader({
           )}
           
           <Badge
-            className={
+            className={cn(
+              "hidden sm:flex shrink-0",
               isAuthenticated
                 ? "border-emerald/40 bg-emerald/20 text-emerald dark:text-emerald"
                 : "border-border bg-surface text-muted"
-            }
+            )}
           >
             {isAuthenticated ? "Authenticated" : "Guest"}
           </Badge>
           {isAuthenticated && role && (
-            <Badge className="border-border bg-surface text-foreground">
-              {isAdmin ? "admin" : role === "both" ? `both (${effectiveRole})` : role}
+            <Badge className="hidden xs:flex border-border bg-surface text-foreground shrink-0">
+              {isAdmin ? "admin" : role === "both" ? `${effectiveRole}` : role}
             </Badge>
           )}
           {isAuthenticated && role === "both" && (
-            <div className="hidden rounded-xl border border-border bg-surface p-1 sm:flex">
+            <div className="hidden rounded-xl border border-border bg-surface p-1 md:flex shrink-0">
               <button
                 type="button"
                 onClick={() => onModeChange("buyer")}
                 className={cn(
-                  "rounded-lg px-2 py-1 text-xs",
+                  "rounded-lg px-2 py-1 text-xs whitespace-nowrap",
                   effectiveRole === "buyer" ? "bg-electricBlue text-white" : "text-muted"
                 )}
               >
-                Buyer View
+                Buyer
               </button>
               <button
                 type="button"
                 onClick={() => onModeChange("traveler")}
                 className={cn(
-                  "rounded-lg px-2 py-1 text-xs",
+                  "rounded-lg px-2 py-1 text-xs whitespace-nowrap",
                   effectiveRole === "traveler" ? "bg-electricBlue text-white" : "text-muted"
                 )}
               >
-                Traveler View
+                Traveler
               </button>
             </div>
           )}
           {isAuthenticated ? (
-            <Button variant="secondary" onClick={() => void onSignOut()}>
+            <Button variant="secondary" className="shrink-0 h-9 px-3 text-xs" onClick={() => void onSignOut()}>
               Log out
             </Button>
           ) : (
-            <Link href="/auth">
-              <Button>Log in / Sign up</Button>
+            <Link href="/auth" className="shrink-0">
+              <Button className="h-9 px-3 text-xs">Log in</Button>
             </Link>
           )}
         </div>
