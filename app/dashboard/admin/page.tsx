@@ -2,7 +2,6 @@
 
 import { Wallet, CheckCircle2, Smartphone, CreditCard, User, ArrowRight, ExternalLink, X, ChevronRight, Clock, AlertCircle, RefreshCw, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/lib/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { DashboardGuard } from "@/components/guards/dashboard-guard";
@@ -178,7 +177,7 @@ export default function AdminDashboardPage(): JSX.Element {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (supabase) void supabase.removeChannel(channel);
     };
   }, []);
 
