@@ -125,6 +125,7 @@ export function useCreatePost() {
 export function usePostLike(postId: string, userId: string | undefined) {
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Check if user has liked this post
   useEffect(() => {
@@ -132,13 +133,18 @@ export function usePostLike(postId: string, userId: string | undefined) {
 
     const checkLike = async () => {
       if (!supabase || !userId) return;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("post_likes")
         .select("id")
         .eq("post_id", postId)
         .eq("user_id", userId)
         .maybeSingle();
 
+      if (error) {
+        setError(error);
+        setLiked(false);
+        return;
+      }
       setLiked(!!data);
     };
 
@@ -146,34 +152,39 @@ export function usePostLike(postId: string, userId: string | undefined) {
   }, [postId, userId]);
 
   const toggleLike = async () => {
-    if (!supabase || !userId) return;
+    if (!supabase) throw new Error("Supabase not configured");
+    if (!userId) throw new Error("You must be signed in to like posts");
 
     setLoading(true);
     try {
       if (liked) {
-        await supabase
+        const { error } = await supabase
           .from("post_likes")
           .delete()
           .eq("post_id", postId)
           .eq("user_id", userId);
+        if (error) throw error;
       } else {
-        await supabase
+        const { error } = await supabase
           .from("post_likes")
           .insert({ post_id: postId, user_id: userId });
+        if (error) throw error;
       }
       setLiked((prev) => !prev);
+      setError(null);
     } finally {
       setLoading(false);
     }
   };
 
-  return { liked, toggleLike, loading };
+  return { liked, toggleLike, loading, error };
 }
 
 // Comments for a post
 export function usePostComments(postId: string) {
   const [comments, setComments] = useState<PostComment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   
   const postIdRef = useRef(postId);
   postIdRef.current = postId;
@@ -181,12 +192,18 @@ export function usePostComments(postId: string) {
   const fetchComments = useCallback(async () => {
     if (!supabase || !postIdRef.current) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("post_comments")
       .select("*, author:profiles(full_name, rating, verified)")
       .eq("post_id", postIdRef.current)
       .order("created_at", { ascending: true });
 
+    if (error) {
+      setError(error);
+      setComments([]);
+      setLoading(false);
+      return;
+    }
     setComments(data || []);
     setLoading(false);
   }, []);
@@ -196,7 +213,8 @@ export function usePostComments(postId: string) {
   }, []); // Only fetch on mount
 
   const addComment = async (content: string, authorId: string, parentId?: string) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error("Supabase not configured");
+    if (!authorId) throw new Error("You must be signed in to comment");
 
     const { data, error } = await supabase
       .from("post_comments")
@@ -211,10 +229,11 @@ export function usePostComments(postId: string) {
 
     if (error) throw error;
     await fetchComments();
+    setError(null);
     return data;
   };
 
-  return { comments, loading, addComment, refresh: fetchComments };
+  return { comments, loading, error, addComment, refresh: fetchComments };
 }
 
 // Bookmark a post

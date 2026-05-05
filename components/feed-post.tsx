@@ -97,6 +97,8 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
       await addComment(commentText.trim(), userId);
       setLocalCommentCount(prev => prev + 1);
       setCommentText("");
+    } catch (e) {
+      console.error("Failed to add comment:", e);
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +108,13 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
     // Update optimistically before the async call
     const newLiked = !liked;
     setLocalLikeCount(prev => newLiked ? prev + 1 : prev - 1);
-    await toggleLike();
+    try {
+      await toggleLike();
+    } catch (e) {
+      // Revert optimistic update if the DB write failed
+      setLocalLikeCount(prev => newLiked ? prev - 1 : prev + 1);
+      console.error("Failed to toggle like:", e);
+    }
   };
   
   const handleAddReply = async (parentId: string) => {
@@ -118,6 +126,8 @@ export function FeedPost({ post }: FeedPostProps): JSX.Element {
       setLocalCommentCount(prev => prev + 1);
       setReplyText("");
       setReplyingTo(null);
+    } catch (e) {
+      console.error("Failed to add reply:", e);
     } finally {
       setSubmittingReply(false);
     }
